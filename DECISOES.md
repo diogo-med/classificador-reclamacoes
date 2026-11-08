@@ -1,0 +1,115 @@
+# Decisões
+
+Decisões tomadas sem consulta, com alternativas e motivo. Onde o prompt de execução e o
+`docs/plano.md` divergem, vale o prompt; as divergências estão marcadas com **[divergência]**.
+
+## Gerais
+
+**D01. Plano renomeado para `docs/plano.md`.** O arquivo chegou como
+`docs/Classificador de reclamações em PT-BR (Olist) — base do projeto(1).md` (não versionado).
+Renomeei para o nome que o prompt e o próprio plano usam.
+
+**D02. [divergência] Pergunta central.** O plano pergunta se o modelo pequeno "iguala ou supera"
+o LLM grande. O prompt redefine: *quanto da qualidade do Gemini um 2B ajustado retém, medido em
+rótulos revisados por humano, e a que custo e latência*. Como os rótulos de treino vêm do Gemini,
+isso é destilação: o aluno dificilmente supera o professor nos rótulos do próprio professor. Vale
+a pergunta do prompt.
+
+**D03. [divergência] Estrutura do repositório.** Além do plano: `tests/`, `ESTUDO.md`,
+`src/config.py` (caminhos e seeds), `src/esquema.py` (esquema JSON e validação),
+`src/amostrar.py` (etapa 3) e `data/processed/` (amostra rotulada versionada no git, pequena e
+redistribuível sob CC BY-NC-SA 4.0). Alternativa: deixar tudo em `outputs/` (fora do git), mas aí
+`src/avaliar.py` não rodaria do zero num clone.
+
+**D04. Seed única = 42** em amostragem, divisão, embaralhamento de lotes e Ollama.
+
+## Dados (etapa 2)
+
+**D05. Deduplicação.** O plano diz "551 pedidos com mais de uma avaliação; manter a mais recente".
+Nos dados baixados são 547 pedidos com mais de uma avaliação e 814 linhas com `review_id`
+repetido (a mesma avaliação ligada a mais de um pedido). Regra: (1) por `order_id`, mantenho a de
+`review_answer_timestamp` mais recente; (2) descarto `review_id` que continue ligado a mais de um
+pedido, porque não dá para saber a qual pedido o atraso se refere, e isso contaminaria a checagem
+independente. Alternativa: manter a primeira ocorrência. Removidas 1.690 linhas no total (1,7%).
+
+**D06. Atraso real.** `atraso_real = 1` se a data (sem hora) de `order_delivered_customer_date` for
+posterior à data de `order_estimated_delivery_date`; só para `order_status = delivered` com as duas
+datas. Nos demais, fica nulo. Taxa nos entregues: 6,77% (o plano citava ~6,6%; a diferença vem da
+comparação por data e da deduplicação).
+
+**D07. Texto = título + ". " + mensagem.** Só entram avaliações com mensagem não vazia; o título
+sozinho (geralmente 1-2 palavras) não basta. Não filtrei textos muito curtos ("ok", "recomendo"):
+fazem parte da distribuição real.
+
+## Amostragem (etapa 3)
+
+**D08. Amostra de 4.000, cotas por nota proporcionais a contagem × peso**, com peso 3 para notas
+1-3 e 1 para 4-5. Resultado: 1.494 / 365 / 613 / 343 / 1.185 (notas 1 a 5), ou seja 62% em 1-3
+contra 35% na população com texto. Teste = 500 (estratificado por nota), validação = 10% do resto
+(350), treino = 3.150. Feito por `src/amostrar.py` usando só a nota, antes de ler textos.
+
+## Categorias (etapa 4)
+
+Li 200 avaliações sorteadas só do treino (`random_state=7`). Mudanças em relação ao plano:
+
+**D09. `sem_resposta` virou `atendimento`.** Nas 200, as queixas de atendimento iam além de "não
+respondeu": dificuldade de trocar ou devolver, pedido de cancelamento ignorado, cancelamento
+indevido, entregador mal-educado. Um nome mais amplo evita jogar tudo isso em `outro`.
+
+**D10. Regra explícita entre `atraso` e `nao_recebido`.** "Ainda não recebi o produto" é a
+reclamação mais comum e fica entre as duas. Regra: `nao_recebido` quando o cliente diz que não
+recebeu; `atraso` quando reclama de demora ou prazo descumprido; as duas quando diz as duas coisas.
+"Demorou, mas chegou no prazo" não é atraso. Como "ainda não recebi" em pedido entregue quase
+sempre indica atraso real (a avaliação foi escrita antes da entrega), a checagem independente
+reporta também `atraso OU nao_recebido`.
+
+**D11. `elogio` é exclusivo** (nunca junto com categoria de problema) e **`outro`** cobre problemas
+fora da lista (preço, nota fiscal, cobrança, estoque) e textos sem conteúdo avaliável. Assim toda
+avaliação tem pelo menos uma categoria.
+
+**D12. Não criei categoria de cancelamento/cobrança.** Apareceu em ~4% das 200; com 3.150
+exemplos de treino, uma classe tão rara teria F1 instável. Fica em `outro` ou `atendimento`.
+
+**D13. Sentimento com 3 classes** (positivo, neutro, negativo), pelo tom do texto e não pela nota
+(há casos como nota 1 com "GOSTEI MUITO...").
+
+## Rotulagem (etapa 5)
+
+**D14. Modelo do Gemini: `gemini-3.6-flash`** (versão retornada pela API em `model_version`:
+`gemini-3.6-flash`). Testado em 08/11/2026: `gemini-2.5-flash` não está mais disponível para contas
+novas (404); os aliases `gemini-3.5-flash` e `gemini-3.7-flash` redirecionavam para outras versões
+(3.6 e 3.8); `gemini-3.8-flash` deu 503/504 repetidos. Fixei o nome exato `gemini-3.6-flash` para
+reprodutibilidade. Configuração: temperatura 0, `response_mime_type=application/json`,
+`response_json_schema` = esquema do lote, raciocínio no padrão do modelo.
+
+**D15. Lotes de 25 avaliações**, embaralhadas com seed 42 (misturando splits, para o rotulador não
+"saber" o que é teste). Validação item a item contra o esquema; itens inválidos ficam registrados
+e podem ser repetidos depois.
+
+**D16. `data/processed/amostra.parquet` entra no git.** São 524 KB com as 4.000 avaliações
+sorteadas e a coluna `split`. Versionar fixa a divisão de teste: qualquer clone avalia nas mesmas
+500 avaliações, mesmo se uma versão futura do pandas/sklearn mudar o sorteio com a mesma seed, e o
+histórico do git prova que o teste foi separado antes da rotulagem e do treino. A licença do Olist
+(CC BY-NC-SA 4.0) permite redistribuir com atribuição e os mesmos termos (ver `data/README.md`).
+Alternativa: deixar fora e regenerar com `src/amostrar.py`, mas aí a divisão dependeria das versões
+das bibliotecas. Os rótulos consolidados também vão para `data/processed/` pelo mesmo motivo; os
+checkpoints crus da rotulagem (`outputs/*.jsonl`) ficam fora do git.
+
+**D17. Checkpoints da rotulagem ficam em `outputs/`** (fora do git), um `.jsonl` por rotulador,
+uma linha por lote. Isso não é `data/interim/`; por isso a conferência após a queda da sessão não
+os encontrou lá.
+
+**D18. Qwen3.5-9B não roda localmente.** A medição de 20 avaliações do 9B no Ollama local foi
+encerrada pelo sistema (código 137, falta de memória) com o VS Code aberto e os 16 GB de RAM
+compartilhados. O 9B como segundo rotulador e como baseline de qualidade roda no Kaggle (como o
+prompt já pede para o rotulador). A tabela de eficiência local do 9B será tentada de novo com a
+máquina mais livre; se falhar outra vez, fica documentada como bloqueada.
+
+## Medições antes de lotes locais (regra das 2 horas)
+
+| Modelo | Amostra | Latência média | Extrapolação | Decisão |
+| --- | --- | --- | --- | --- |
+| qwen3.5:2b (q8_0, Ollama local, CPU) | 20 avaliações da validação | 9,6 s (1ª chamada 25 s, com carga do modelo) | 500 × 9,6 s ≈ 80 min | abaixo de 2 h: baseline 2B pode rodar local |
+| qwen3.5:9b (Q4_K_M, Ollama local, CPU) | 20 avaliações da validação | não medida (morto por memória) | — | roda no Kaggle |
+
+Medições feitas na validação (não no teste) para não olhar saídas do teste.

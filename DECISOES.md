@@ -113,3 +113,22 @@ máquina mais livre; se falhar outra vez, fica documentada como bloqueada.
 | qwen3.5:9b (Q4_K_M, Ollama local, CPU) | 20 avaliações da validação | não medida (morto por memória) | — | roda no Kaggle |
 
 Medições feitas na validação (não no teste) para não olhar saídas do teste.
+
+## Cota do Gemini
+
+**D19. [divergência] Lotes de 100 em vez de 20-30.** O nível gratuito do `gemini-3.6-flash`
+permite **20 requisições por dia** por modelo (`quotaId:
+GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20`, conferido no erro 429 em
+08/11/2026; renova por volta das 05:00, horário de Brasília). Em 08/11 foram feitas 10 requisições
+de 25 = 250 avaliações (202 treino, 28 teste, 20 validação); o resto da cota foi gasto em testes de
+conexão. Com lotes de 25, as 3.750 restantes levariam 7,5 dias. Decisão: o restante vai em lotes
+de 100 (20 requisições = 2.000 avaliações por dia), na ordem teste → validação → treino.
+Alternativas descartadas: (a) trocar o professor por um modelo `flash-lite` com cota maior, que é
+mais fraco e misturaria professores; (b) parar em 750 avaliações por dia, abaixo do mínimo de 2.000
+do prompt. Risco: lote maior pode piorar a atenção do modelo por item. Mitigação: todos os itens
+são validados contra o esquema e a concordância com o 9B e com a revisão humana é medida igual
+para todos; o tamanho do lote fica registrado por linha no checkpoint.
+
+**D20. Orçamento de requisições do Gemini até 10/11.** 9/11: 20 requisições para rotulagem (teste
+e validação completos, mais ~1.200 do treino). 10/11: o baseline do Gemini com uma avaliação por
+chamada no teste (500 requisições) é **inviável** com 20 por dia. Ver D21 quando for executado.

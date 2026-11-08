@@ -35,9 +35,17 @@ class CotaDiariaEsgotada(Exception):
     pass
 
 
+PRIORIDADE_SPLIT = {"teste": 0, "validacao": 1, "treino": 2}
+
+
 def fazer_lotes(df: pd.DataFrame, tamanho: int, seed: int = SEED) -> list[list[tuple[str, str]]]:
-    """Embaralha (seed fixa) e divide em lotes de (review_id, texto)."""
+    """Embaralha (seed fixa) e divide em lotes de (review_id, texto).
+
+    Se houver coluna 'split', rotula primeiro teste, depois validação, depois
+    treino (a cota diária do Gemini é pequena; ver DECISOES.md D19)."""
     df = df.sample(frac=1, random_state=seed)
+    if "split" in df.columns:
+        df = df.assign(_p=df["split"].map(PRIORIDADE_SPLIT)).sort_values("_p", kind="stable")
     pares = list(zip(df["review_id"], df["texto"]))
     return [pares[i:i + tamanho] for i in range(0, len(pares), tamanho)]
 

@@ -1,0 +1,36 @@
+{
+  "avaliacoes_brutas": 99224,
+  "pedidos_brutos": 99441,
+  "avaliacoes_apos_dedup": 97534,
+  "removidas_na_dedup": 1690,
+  "avaliacoes_com_texto": 40312,
+  "fracao_com_texto": 0.4133,
+  "pedidos_entregues_com_datas": 96470,
+  "taxa_atraso_entregues": 0.0677,
+  "com_texto_e_atraso_conhecido": 38489,
+  "taxa_atraso_com_texto": 0.0967,
+  "distribuicao_nota_com_texto": {
+    "1": 8533,
+    "2": 2090,
+    "3": 3499,
+    "4": 5893,
+    "5": 20297
+  },
+  "taxa_atraso_por_nota_com_texto": {
+    "1": 0.3345,
+    "2": 0.1732,
+    "3": 0.1025,
+    "4": 0.0413,
+    "5": 0.0205
+  },
+  "tamanho_texto_caracteres": {
+    "count": 40312.0,
+    "mean": 71.6,
+    "std": 54.6,
+    "min": 1.0,
+    "50%": 56.0,
+    "90%": 164.0,
+    "99%": 211.0,
+    "max": 229.0
+  }
+}

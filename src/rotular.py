@@ -111,7 +111,8 @@ def chamar_gemini(cliente, prompt: str, esquema: dict, modelo: str = MODELO_GEMI
 
 # ---------------------------------------------------------------- Ollama
 def chamar_ollama(prompt: str, modelo: str, esquema: dict | None = None,
-                  url: str = "http://localhost:11434", num_predict: int = 4096):
+                  url: str = "http://localhost:11434", num_predict: int = 4096,
+                  num_ctx: int = 8192):
     """Chamada ao /api/chat do Ollama com raciocínio desligado e temperatura 0.
     Retorna (texto, modelo, segundos, info) onde info tem contagem de tokens."""
     corpo = {
@@ -119,7 +120,8 @@ def chamar_ollama(prompt: str, modelo: str, esquema: dict | None = None,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "think": False,
-        "options": {"temperature": 0, "seed": SEED, "num_predict": num_predict},
+        "options": {"temperature": 0, "seed": SEED, "num_predict": num_predict,
+                    "num_ctx": num_ctx},
     }
     if esquema is not None:
         corpo["format"] = esquema
@@ -170,7 +172,7 @@ def rotular(df, rotulador, saida: Path, tamanho_lote=25, modelo=None,
             obj = None
         rotulos = validar_lote(obj, ids)
         registro = {"lote_ids": ids, "rotulos": rotulos, "modelo": versao,
-                    "prompt": VERSAO_ROTULAGEM, "segundos": round(seg, 2),
+                    "prompt": VERSAO_ROTULAGEM, "tamanho_lote": len(ids), "segundos": round(seg, 2),
                     "invalidos": [i for i in ids if i not in rotulos], **info}
         with open(saida, "a", encoding="utf-8") as f:
             f.write(json.dumps(registro, ensure_ascii=False) + "\n")

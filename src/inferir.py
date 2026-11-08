@@ -79,7 +79,7 @@ def inferir(df, backend, modelo, saida: Path, url="http://localhost:11434",
         info = {}
         if backend == "ollama":
             resposta, versao, seg, info = chamar_ollama(
-                prompt, modelo, ESQUEMA_SAIDA if restrito else None, url, num_predict=512)
+                prompt, modelo, ESQUEMA_SAIDA if restrito else None, url, num_predict=512, num_ctx=2048)
         else:
             resposta, versao, seg = chamar_gemini_livre(cliente, prompt, modelo or MODELO_GEMINI)
         reg = {"review_id": rid, "resposta": resposta, "modelo": versao,

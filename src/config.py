@@ -1,12 +1,14 @@
 """Caminhos, sementes e constantes compartilhadas por todos os scripts."""
+import os
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 DATA_RAW = RAIZ / "data" / "raw"
 DATA_INTERIM = RAIZ / "data" / "interim"
-DATA_PROCESSED = RAIZ / "data" / "processed"
+# No Kaggle, CR_DATA_PROCESSED aponta para o dataset montado (somente leitura).
+DATA_PROCESSED = Path(os.getenv("CR_DATA_PROCESSED", RAIZ / "data" / "processed"))
 DATA_REVISAO = RAIZ / "data" / "revisao"
-OUTPUTS = RAIZ / "outputs"
+OUTPUTS = Path(os.getenv("CR_OUTPUTS", RAIZ / "outputs"))
 RESULTADOS = RAIZ / "resultados"
 
 SEED = 42

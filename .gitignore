@@ -1,0 +1,6 @@
+.env
+.venv/
+data/raw/
+data/interim/
+outputs/
+*.gguf

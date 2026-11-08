@@ -1,7 +1,25 @@
 {
   "permissions": {
-    "allow": ["Bash(python *)", "Bash(pip *)", "Bash(kaggle *)",
-              "Bash(git add *)", "Bash(git commit *)", "Bash(git push *)"],
-    "deny": ["Read(./.env)"]
+    "allow": [
+      "Bash(python *)", "Bash(pip *)", "Bash(pytest *)", "Bash(kaggle *)",
+      "Bash(ollama *)",
+      "Bash(git add *)", "Bash(git commit *)",
+      "Bash(git push)", "Bash(git push *)",
+      "Bash(git status)", "Bash(git status *)",
+      "Bash(git diff *)", "Bash(git log *)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./.env.*)",
+      "Bash(cat .env*)", "Bash(head .env*)", "Bash(less .env*)", "Bash(grep * .env*)",
+      "Bash(sudo *)", "Bash(gh *)",
+      "Bash(git push --force*)", "Bash(git push -f*)",
+      "Bash(git push * --force*)", "Bash(git push * -f*)",
+      "Bash(git commit --amend*)", "Bash(git rebase *)", "Bash(git filter-branch*)"
+    ]
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
   }
 }

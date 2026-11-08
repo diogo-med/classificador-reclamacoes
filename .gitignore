@@ -1,6 +1,23 @@
+# segredos
 .env
+.env.*
+!.env.example
 .venv/
+# dados brutos/intermediários e saídas (regeneráveis)
 data/raw/
 data/interim/
 outputs/
+# modelos
 *.gguf
+*.safetensors
+*.bin
+*.pt
+modelos/
+adaptadores/
+# kaggle: saídas baixadas
+kaggle/*/saida/
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/

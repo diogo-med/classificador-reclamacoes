@@ -1,0 +1,4 @@
+{'version': '0.40.15'}
+NAME          ID              SIZE      MODIFIED               
+qwen3.5:2b    0689d44085e0    2.7 GB    Less than a second ago    
+qwen3.5:9b    56671c2ab938    6.6 GB    24 seconds ago            

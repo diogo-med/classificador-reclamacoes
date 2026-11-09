@@ -31,7 +31,8 @@ O restante vai em lotes de 100, com teste e validação primeiro.
 - Laço que tenta o push do kernel `cr-treino-qwen08b-lora` a cada 5 min (bloqueado pelo
   limite de 2 sessões de GPU). **O 0.8B só valida o pipeline com os 250 rótulos parciais e
   não entra em nenhum resultado (D28).**
-- Alarme às 05:10 de 9/11 para retomar a rotulagem do Gemini.
+- Alarme às 05:10 de 9/11: primeiro `checar_lote.py` (D29), depois a rotulagem do Gemini.
+- Kaggle `cr-treino-qwen08b-lora` (só pipeline, D28) enviado às 22:05.
 
 ### Falta
 - Rotulagem do Gemini (9/11 de manhã), consolidar, nova versão do dataset do Kaggle.
@@ -42,6 +43,7 @@ O restante vai em lotes de 100, com teste e validação primeiro.
 ### Para retomar
 ```bash
 conda activate classificador-reclamacoes
+python -u src/checar_lote.py        # 1º: 2 requisições, só treino (D29); diz se usa lote 100 ou 50
 python -u src/rotular.py --rotulador gemini --saida outputs/rotulos_gemini.jsonl --tamanho-lote 100 --pausa 15
 kaggle kernels status diogomede/cr-rotulador-9b
 python src/importar_kaggle.py rotulador_9b          # quando o kernel terminar

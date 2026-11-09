@@ -210,3 +210,22 @@ prefixo `prompt_chat()` do treino e temperatura 0, gerou JSON válido no esquema
 (130 tokens de entrada, 39 de saída), na mesma CPU. A versão fica fixada em `requirements.txt`
 e no `requirements.txt` do Space (wheel de CPU de abetlen.github.io). O projetor de visão
 (`mmproj`) não é necessário para uso só com texto.
+
+**D32. Pipeline validado de ponta a ponta com o Qwen3.5-0.8B** (rótulos parciais, fora dos
+resultados, D28). Kernel `cr-treino-qwen08b-lora` em 08/11: T4, fp16 (a T4 não tem bf16; o
+`bf16=False` foi escolhido automaticamente por `torch.cuda.is_bf16_supported()`), 202 exemplos,
+3 épocas em 5,4 min, melhor época pela perda de validação, 100% de JSON válido e no esquema nas
+20 da validação. Versões: unsloth 2026.11.3, transformers 5.17.0, trl 1.15.0, peft 0.21.2,
+torch 2.11.0+cu130. Exportação GGUF q8_0 funcionou (arquivo em `gguf_<nome>_gguf/`).
+Conferências:
+- o prefixo salvo no Kaggle é **idêntico** a `prompts.prompt_chat()` (usado pela demo e pelo
+  Modelfile);
+- importado no Ollama local com `ollama/Modelfile` (TEMPLATE explícito), as saídas de 20 exemplos
+  da validação tiveram **rótulos idênticos em 20/20** às do Kaggle, e texto idêntico em 15/20
+  (só o resumo muda, por causa do q8_0 contra 16 bits);
+- o número de tokens do prompt com o meu TEMPLATE é igual ao do `qwen3.5:2b` oficial com o
+  renderizador do Ollama e `think: false` (120/120, 160/160, 135/135), ou seja, o 2B base e o 2B
+  ajustado recebem o mesmo prompt no Ollama.
+
+**"LoRA bf16" na T4 = LoRA em 16 bits com fp16.** O que importa na recomendação do Unsloth é não
+usar 4 bits (QLoRA); a T4 não suporta bf16 em hardware, então o treino usa fp16.

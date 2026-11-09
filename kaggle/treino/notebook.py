@@ -168,4 +168,5 @@ for quant in <<QUANTS>>:
     except Exception as e:
         print("falha no GGUF", quant, repr(e)[:1000])
 subprocess.run(f"ls -laR {SAIDA} | grep -v checkpoint | head -60", shell=True)
-subprocess.run(f"rm -rf {SAIDA}/checkpoints", shell=True)
+# o Unsloth também deixa o modelo mesclado em 16 bits (safetensors, GB); só os GGUF interessam
+subprocess.run(f"rm -rf {SAIDA}/checkpoints {SAIDA}/gguf_{NOME}/*.safetensors {SAIDA}/unsloth_compiled_cache", shell=True)

@@ -136,3 +136,14 @@ def prompt_baseline(texto: str) -> str:
 def mensagens_baseline(texto: str) -> list[dict]:
     """Formato de chat usado no Ollama, no transformers e no treino."""
     return [{"role": "user", "content": prompt_baseline(texto)}]
+
+
+# Prefixo de chat exatamente como o tokenizer do Qwen3.5 renderiza com
+# add_generation_prompt=True e enable_thinking=False (conferido contra
+# resultados/treino/<modelo>/prefixo_exemplo.txt, gerado no Kaggle).
+# Usado pela demo (llama-cpp-python) e pelo Modelfile do Ollama.
+PREFIXO_CHAT = "<|im_start|>user\n{conteudo}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+
+def prompt_chat(texto: str) -> str:
+    return PREFIXO_CHAT.format(conteudo=prompt_baseline(texto))

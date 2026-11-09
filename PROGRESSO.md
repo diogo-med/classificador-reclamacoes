@@ -2,7 +2,7 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 08/11/2026, 21:45
+## Estado em 08/11/2026, 23:00
 
 ### Bloqueio principal: cota do Gemini
 O nível gratuito do `gemini-3.6-flash` permite **20 requisições/dia** (D19). Rotuladas até agora:
@@ -25,19 +25,23 @@ O restante vai em lotes de 100, com teste e validação primeiro.
   10,9 tokens/s (`resultados/eficiencia.json`).
 - Medição local do 9B: 28,6 s/avaliação (2ª tentativa; a 1ª morreu por memória).
 
+### Concluído nesta noite
+- Etapa 6: kernel `cr-rotulador-9b` v2 concluído. 9B rotulou 1.497 de 1.500 (3 inválidas);
+  baselines 9B e 2B no teste (500 cada). Modelos idênticos aos locais (mesmos digests).
+- Eficiência local: 2B 7,2 s (p95 10,0); 9B 26,1 s (p95 36,4). `resultados/eficiencia.json`.
+- llama-cpp-python 0.3.36 carrega o Qwen3.5-2B público e gera JSON válido (D31).
+- Linha do Gemini na tabela = "pendente de revisão" até o `recalcular.py` (D30).
+- `src/checar_lote.py` pronto (D29): roda primeiro às 05:10.
+- `avaliar.py` testado com os dados reais parciais (tabelas parciais não commitadas).
+
 ### Rodando em segundo plano (pausa até a cota renovar)
-- Kaggle `cr-rotulador-9b` v2 (9B rotulador + baselines 9B/2B no teste).
-- Local: eficiência do `qwen3.5:9b` (100 avaliações, ~48 min).
-- Laço que tenta o push do kernel `cr-treino-qwen08b-lora` a cada 5 min (bloqueado pelo
-  limite de 2 sessões de GPU). **O 0.8B só valida o pipeline com os 250 rótulos parciais e
-  não entra em nenhum resultado (D28).**
-- Alarme às 05:10 de 9/11: primeiro `checar_lote.py` (D29), depois a rotulagem do Gemini.
-- Kaggle `cr-treino-qwen08b-lora` (só pipeline, D28) enviado às 22:05.
+- Kaggle `cr-treino-qwen08b-lora` (só pipeline, rótulos parciais, fora dos resultados, D28).
+- Alarme às 05:10 de 9/11: `checar_lote.py`, depois a rotulagem do Gemini.
 
 ### Falta
 - Rotulagem do Gemini (9/11 de manhã), consolidar, nova versão do dataset do Kaggle.
 - Treino 0.8B (pipeline) → treino 2B → GGUF → Ollama local → conferência em 20 exemplos.
-- Planilha de revisão (depende do 9B), avaliação final, eficiência do 2B ajustado e do 9B.
+- Planilha de revisão (depende dos rótulos do Gemini no teste), avaliação final, eficiência do 2B ajustado.
 - Cards, README final, ESTUDO.md, artigo.
 
 ### Para retomar

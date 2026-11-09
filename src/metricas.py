@@ -105,6 +105,58 @@ def checagem_atraso(atraso_real, previsto_listas) -> dict:
             "cobertura_dos_atrasados_pct": 100 * vp / max(int(r.sum()), 1),
             # dos marcados, quantos estavam realmente atrasados (precisão)
             "precisao_pct": 100 * vp / max(int(p.sum()), 1),
+            # números absolutos, para ler as duas direções sem porcentagem
+            "atrasados_reais": int(r.sum()),
             "marcados": int(p.sum()),
+            "marcados_e_atrasados": vp,
         }
+    return saida
+
+
+def _f1_macro_matrizes(y: np.ndarray, p: np.ndarray) -> np.ndarray:
+    """F1 macro de várias reamostragens de uma vez. y, p: (B, n, k) 0/1 -> (B,).
+    Mesma convenção do sklearn com zero_division=0: categoria sem VP, FP e FN vale 0."""
+    vp = (y & p).sum(axis=1)
+    fp = ((1 - y) & p).sum(axis=1)
+    fn = (y & (1 - p)).sum(axis=1)
+    den = 2 * vp + fp + fn
+    f1 = np.divide(2 * vp, den, out=np.zeros(den.shape, dtype=float), where=den > 0)
+    return f1.mean(axis=1)
+
+
+def bootstrap_f1_macro(verdade, previsoes: dict, pares=(), n_reamostras: int = 1000, seed: int = 42,
+                       categorias=CATEGORIAS, bloco: int = 100) -> dict:
+    """Intervalo de confiança de 95% (percentil) do F1 macro por bootstrap do teste.
+
+    verdade: listas de categorias (uma por avaliação). previsoes: {modelo: listas alinhadas}.
+    As MESMAS reamostragens são usadas para todos os modelos (bootstrap pareado), então a
+    diferença entre dois modelos em `pares` é calculada reamostra a reamostra.
+    O IC mede só a variação por amostragem do teste; não cobre o erro dos rótulos de referência."""
+    y = binarizar(verdade, categorias)
+    ps = {m: binarizar(l, categorias) for m, l in previsoes.items()}
+    n = len(y)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, n, size=(n_reamostras, n))
+    amostras = {m: [] for m in ps}
+    for i in range(0, n_reamostras, bloco):
+        ib = idx[i:i + bloco]
+        yb = y[ib]
+        for m, p in ps.items():
+            amostras[m].append(_f1_macro_matrizes(yb, p[ib]))
+    amostras = {m: np.concatenate(v) for m, v in amostras.items()}
+
+    def resumo(pontual, dist):
+        lo, hi = np.percentile(dist, [2.5, 97.5])
+        return {"f1_macro": float(pontual), "ic95": [float(lo), float(hi)]}
+
+    saida = {"n": int(n), "n_reamostras": int(n_reamostras), "seed": int(seed), "metodo": "percentil, pareado",
+             "modelos": {m: resumo(_f1_macro_matrizes(y[None], p[None])[0], amostras[m]) for m, p in ps.items()},
+             "diferencas": {}}
+    for a, b in pares:
+        if a in ps and b in ps:
+            d = amostras[a] - amostras[b]
+            r = resumo(saida["modelos"][a]["f1_macro"] - saida["modelos"][b]["f1_macro"], d)
+            saida["diferencas"][f"{a} − {b}"] = {
+                "diferenca_f1_macro": r["f1_macro"], "ic95": r["ic95"],
+                "fracao_reamostras_a_maior": float((d > 0).mean())}
     return saida

@@ -129,6 +129,22 @@ def main():
     if not a.sem_avaliar:
         import avaliar
         avaliar.main()
+        imprimir_intervalos(RESULTADOS / "bootstrap_f1_macro.json")
+
+
+def imprimir_intervalos(caminho: Path):
+    """Resume os ICs de 95% (bootstrap pareado do teste) recalculados contra os rótulos revisados."""
+    if not caminho.exists():
+        return
+    b = json.loads(caminho.read_text(encoding="utf-8"))
+    print(f"\nF1 macro no teste com IC 95% (referência: {b.get('referencia')}, "
+          f"{b['n_reamostras']} reamostragens, seed {b['seed']}):")
+    for nome, r in b["modelos"].items():
+        print(f"  {nome}: {r['f1_macro']:.3f} [{r['ic95'][0]:.3f}, {r['ic95'][1]:.3f}]")
+    for par, d in b["diferencas"].items():
+        conclusao = ("intervalo não inclui 0" if d["ic95"][0] > 0 or d["ic95"][1] < 0
+                     else "intervalo inclui 0: diferença não conclusiva")
+        print(f"  {par}: {d['diferenca_f1_macro']:+.3f} [{d['ic95'][0]:+.3f}, {d['ic95'][1]:+.3f}] ({conclusao})")
 
 
 if __name__ == "__main__":

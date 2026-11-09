@@ -1,0 +1,31 @@
+{
+  "definicao": "review_creation_date (dia) < order_delivered_customer_date (dia)",
+  "todas": {
+    "n": 4000,
+    "com_data_de_entrega": 3695,
+    "avaliadas_antes_da_entrega": 495,
+    "atrasados_reais": 577,
+    "atrasados_avaliados_antes_da_entrega": 491
+  },
+  "teste": {
+    "n": 500,
+    "com_data_de_entrega": 457,
+    "avaliadas_antes_da_entrega": 62,
+    "atrasados_reais": 72,
+    "atrasados_avaliados_antes_da_entrega": 62
+  },
+  "treino": {
+    "n": 3150,
+    "com_data_de_entrega": 2915,
+    "avaliadas_antes_da_entrega": 390,
+    "atrasados_reais": 452,
+    "atrasados_avaliados_antes_da_entrega": 386
+  },
+  "validacao": {
+    "n": 350,
+    "com_data_de_entrega": 323,
+    "avaliadas_antes_da_entrega": 43,
+    "atrasados_reais": 53,
+    "atrasados_avaliados_antes_da_entrega": 43
+  }
+}

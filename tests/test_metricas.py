@@ -50,3 +50,30 @@ def test_checagem_atraso_ignora_desconhecidos():
     assert c["atraso"]["cobertura_dos_atrasados_pct"] == pytest.approx(50)
     assert c["atraso"]["precisao_pct"] == pytest.approx(50)
     assert c["atraso_ou_nao_recebido"]["cobertura_dos_atrasados_pct"] == pytest.approx(100)
+
+
+def test_checagem_atraso_numeros_absolutos():
+    c = checagem_atraso([True, True, False, False, None], [["atraso"], [], ["atraso"], [], ["atraso"]])
+    a = c["atraso"]
+    assert (c["n"], a["atrasados_reais"], a["marcados"], a["marcados_e_atrasados"]) == (4, 2, 2, 1)
+    assert a["cobertura_dos_atrasados_pct"] == pytest.approx(50)
+    assert a["precisao_pct"] == pytest.approx(50)
+
+
+def test_bootstrap_f1_macro_pontual_bate_com_sklearn_e_ic_contem():
+    import numpy as np
+    from metricas import bootstrap_f1_macro
+    rng = np.random.default_rng(0)
+    verdade = [[c for c in CATS if rng.random() < 0.4] for _ in range(200)]
+    bom = [v if rng.random() < 0.8 else ["outro"] for v in verdade]
+    ruim = [[c for c in CATS if rng.random() < 0.4] for _ in range(200)]
+    b = bootstrap_f1_macro(verdade, {"bom": bom, "ruim": ruim}, pares=[("bom", "ruim")],
+                           n_reamostras=300, seed=1, categorias=CATS)
+    for nome, prev in [("bom", bom), ("ruim", ruim)]:
+        r = b["modelos"][nome]
+        assert r["f1_macro"] == pytest.approx(metricas_categorias(verdade, prev, CATS)["f1_macro"])
+        assert r["ic95"][0] <= r["f1_macro"] <= r["ic95"][1]
+    d = b["diferencas"]["bom − ruim"]
+    assert d["ic95"][0] > 0 and d["fracao_reamostras_a_maior"] == 1.0
+    # mesma seed -> mesmo resultado
+    assert bootstrap_f1_macro(verdade, {"bom": bom}, n_reamostras=300, seed=1, categorias=CATS)["modelos"]["bom"] == b["modelos"]["bom"]

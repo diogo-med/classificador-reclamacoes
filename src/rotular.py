@@ -120,8 +120,10 @@ def chamar_ollama(prompt: str, modelo: str, esquema: dict | None = None,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
         "think": False,
-        "options": {"temperature": 0, "seed": SEED, "num_predict": num_predict,
-                    "num_ctx": num_ctx},
+        # presence_penalty=0: o Modelfile do qwen3.5 traz 1.5 por padrão, o que muda a
+        # saída mesmo com temperatura 0; zeramos para todos os modelos serem comparáveis.
+        "options": {"temperature": 0, "presence_penalty": 0, "seed": SEED,
+                    "num_predict": num_predict, "num_ctx": num_ctx},
     }
     if esquema is not None:
         corpo["format"] = esquema

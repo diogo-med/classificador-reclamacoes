@@ -1,0 +1,110 @@
+"""Funções de métrica. Sem I/O: recebem listas/DataFrames e devolvem dicionários.
+
+Convenções:
+- categorias são listas de nomes; viram vetores binários na ordem de CATEGORIAS;
+- uma resposta inválida (JSON quebrado) tem categorias [] e sentimento None,
+  e conta como erro (nenhuma categoria prevista, sentimento errado).
+"""
+import numpy as np
+import pandas as pd
+from sklearn.metrics import (accuracy_score, cohen_kappa_score, confusion_matrix,
+                             f1_score)
+
+from config import CATEGORIAS, SENTIMENTOS
+
+
+def binarizar(listas, categorias=CATEGORIAS) -> np.ndarray:
+    """Lista de listas de categorias -> matriz 0/1 (n_exemplos x n_categorias)."""
+    idx = {c: i for i, c in enumerate(categorias)}
+    m = np.zeros((len(listas), len(categorias)), dtype=int)
+    for linha, cats in enumerate(listas):
+        for c in cats or []:
+            if c in idx:
+                m[linha, idx[c]] = 1
+    return m
+
+
+def metricas_categorias(verdade, previsto, categorias=CATEGORIAS) -> dict:
+    """F1 binário por categoria, F1 macro e micro, acerto exato e matriz 2x2 por categoria."""
+    y, p = binarizar(verdade, categorias), binarizar(previsto, categorias)
+    por_cat = {}
+    for i, c in enumerate(categorias):
+        tn, fp, fn, tp = confusion_matrix(y[:, i], p[:, i], labels=[0, 1]).ravel()
+        por_cat[c] = {
+            "f1": float(f1_score(y[:, i], p[:, i], zero_division=0)),
+            "suporte": int(y[:, i].sum()),
+            "matriz": {"vp": int(tp), "fp": int(fp), "fn": int(fn), "vn": int(tn)},
+        }
+    return {
+        "f1_macro": float(f1_score(y, p, average="macro", zero_division=0)),
+        "f1_micro": float(f1_score(y, p, average="micro", zero_division=0)),
+        "acerto_exato": float((y == p).all(axis=1).mean()),
+        "por_categoria": por_cat,
+    }
+
+
+def metricas_sentimento(verdade, previsto) -> dict:
+    """Acurácia e F1 macro (3 classes). Previsão None conta como erro."""
+    p = [s if s in SENTIMENTOS else "__invalido__" for s in previsto]
+    return {
+        "acuracia": float(accuracy_score(verdade, p)),
+        "f1_macro": float(f1_score(verdade, p, labels=SENTIMENTOS, average="macro", zero_division=0)),
+    }
+
+
+def metricas_formato(json_valido, no_esquema) -> dict:
+    return {"json_valido_pct": 100 * float(np.mean(json_valido)),
+            "json_no_esquema_pct": 100 * float(np.mean(no_esquema))}
+
+
+def kappa(a, b) -> float:
+    """Kappa de Cohen; se ambos forem constantes e iguais, devolve 1.0 (concordância total)."""
+    a, b = list(a), list(b)
+    if len(set(a) | set(b)) == 1:
+        return 1.0
+    return float(cohen_kappa_score(a, b))
+
+
+def concordancia(rotulos_a: pd.DataFrame, rotulos_b: pd.DataFrame, categorias=CATEGORIAS) -> dict:
+    """Concordância entre dois rotuladores nas avaliações em comum.
+
+    Cada DataFrame tem review_id, sentimento e categorias. Retorna % de
+    concordância e kappa por categoria (binário) e no sentimento."""
+    m = rotulos_a.merge(rotulos_b, on="review_id", suffixes=("_a", "_b"))
+    ya, yb = binarizar(m["categorias_a"], categorias), binarizar(m["categorias_b"], categorias)
+    por_cat = {c: {"concordancia_pct": 100 * float((ya[:, i] == yb[:, i]).mean()),
+                   "kappa": kappa(ya[:, i], yb[:, i]),
+                   "freq_a": int(ya[:, i].sum()), "freq_b": int(yb[:, i].sum())}
+               for i, c in enumerate(categorias)}
+    sa = m["sentimento_a"].fillna("__nulo__")
+    sb = m["sentimento_b"].fillna("__nulo__")
+    return {
+        "n": int(len(m)),
+        "sentimento": {"concordancia_pct": 100 * float((sa == sb).mean()), "kappa": kappa(sa, sb)},
+        "categorias": por_cat,
+        "kappa_medio_categorias": float(np.mean([v["kappa"] for v in por_cat.values()])),
+        "conjunto_identico_pct": 100 * float((ya == yb).all(axis=1).mean()),
+    }
+
+
+def checagem_atraso(atraso_real, previsto_listas) -> dict:
+    """Compara a categoria prevista 'atraso' (e 'atraso OU nao_recebido') com o
+    atraso real calculado pelas datas. Só entram avaliações com atraso_real conhecido."""
+    real = pd.Series(atraso_real).astype("Float64")
+    ok = real.notna().to_numpy()
+    r = real[ok].astype(int).to_numpy()
+    listas = [l for l, k in zip(previsto_listas, ok) if k]
+    saida = {"n": int(ok.sum()), "taxa_atraso_real": float(r.mean()) if len(r) else None}
+    for nome, cats in [("atraso", {"atraso"}), ("atraso_ou_nao_recebido", {"atraso", "nao_recebido"})]:
+        p = np.array([int(bool(cats & set(l or []))) for l in listas])
+        vp = int(((p == 1) & (r == 1)).sum())
+        saida[nome] = {
+            "concordancia_pct": 100 * float((p == r).mean()) if len(r) else None,
+            "kappa": kappa(r, p) if len(r) else None,
+            # dos realmente atrasados, quantos o rótulo marca (recall)
+            "cobertura_dos_atrasados_pct": 100 * vp / max(int(r.sum()), 1),
+            # dos marcados, quantos estavam realmente atrasados (precisão)
+            "precisao_pct": 100 * vp / max(int(p.sum()), 1),
+            "marcados": int(p.sum()),
+        }
+    return saida

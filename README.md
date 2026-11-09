@@ -34,6 +34,11 @@ os rótulos revisados por humano, quando as tabelas e os intervalos de confianç
 Todos os números abaixo são gerados por `python src/avaliar.py` a partir de arquivos em
 `resultados/`.
 
+### Revisão humana
+<!-- INICIO:revisao -->
+Revisão humana **ainda não feita**: nenhuma linha conferida. Os rótulos de referência são os do Gemini.
+<!-- FIM:revisao -->
+
 ### Qualidade (teste)
 <!-- INICIO:qualidade -->
 Teste: 500 avaliações; referência: rótulos **provisórios** do Gemini (revisão humana pendente).

@@ -356,10 +356,42 @@ def main():
         (RESULTADOS / nome).write_text(conteudo, encoding="utf-8")
     alvo = PRINCIPAL if PRINCIPAL in res else [k for k, v in res.items() if "categorias" in v][-1]
     grafico_matrizes(res, alvo, RESULTADOS / "matriz_confusao.png")
-    atualizar_readme({"qualidade": tq, "f1_categorias": tc, "eficiencia": te,
+    (RESULTADOS / "tabela_revisao.md").write_text(tabela_revisao(), encoding="utf-8")
+    atualizar_readme({"revisao": tabela_revisao(), "qualidade": tq, "f1_categorias": tc, "eficiencia": te,
                       "concordancia": tca, "checagem": tat})
     print(tq)
     print(te)
+
+
+NOMES_BLOCOS = {"teste": "teste", "treino_aleatorio": "treino (sorteio aleatório)",
+                "treino_discordancia": "treino (discordância Gemini × 9B)"}
+
+
+def tabela_revisao() -> str:
+    """Quantas linhas de cada bloco da planilha foram de fato conferidas (x em `conferido`)."""
+    caminho = RESULTADOS / "revisao_humana.json"
+    if not caminho.exists():
+        return ("Revisão humana **ainda não feita**: nenhuma linha conferida. Os rótulos de referência são "
+                "os do Gemini.\n")
+    rev = json.loads(caminho.read_text(encoding="utf-8"))
+    conf = rev.get("conferidas_por_bloco", {})
+    linhas = [f"| {NOMES_BLOCOS.get(b, b)} | {c['conferidas']} | {c['total']} |" for b, c in conf.items()]
+    conc = rev.get("concordancia_gemini_humano", {})
+    extra = []
+    for b, c in conc.items():
+        extra.append(f"| {NOMES_BLOCOS.get(b, b)} | {c['n']} | {c['sentimento']['concordancia_pct']:.1f} | "
+                     f"{c['conjunto_identico_pct']:.1f} | {c['kappa_medio_categorias']:.2f} |")
+    texto = ("Linhas da planilha `data/revisao/revisao_manual.csv` marcadas com x em `conferido` "
+             "(só elas entram nos rótulos revisados):\n\n| Bloco | Conferidas | Total |\n|---|---|---|\n"
+             + "\n".join(linhas) + f"\n\n{rev.get('linhas_com_correcao', 0)} das linhas conferidas tiveram "
+             "correção.\n")
+    if extra:
+        texto += ("\nConcordância Gemini × humano nas linhas conferidas:\n\n| Bloco | n | Sentimento (%) | "
+                  "Conjunto de categorias idêntico (%) | κ médio (categorias) |\n|---|---|---|---|---|\n"
+                  + "\n".join(extra) + "\n\nO bloco de discordância foi escolhido onde Gemini e 9B discordam "
+                  "e não estima a taxa de erro do Gemini. A revisão foi feita vendo o rótulo sugerido "
+                  "(viés de ancoragem).\n")
+    return texto
 
 
 def tabela_concordancia(conc) -> str:

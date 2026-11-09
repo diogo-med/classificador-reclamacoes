@@ -7,7 +7,7 @@ Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 Todas as 16 etapas estão feitas ou documentadas. Falta só o que depende de você (lista no fim).
 Critérios conferidos às 10:30:
 - `python src/avaliar.py` regenera `resultados/` sem nenhuma diferença no git (reprodutível);
-- `pytest`: 18 testes passando;
+- `pytest`: 25 testes passando (após a coluna `conferido`, D36);
 - app (`python app/app.py`, GGUF Q4_K_M) sobe e responde JSON no esquema (3,7 s e 2,8 s em dois
   exemplos), e foi encerrado;
 - nada foi publicado: repositórios do Hugging Face não foram criados, notebooks e dataset do
@@ -117,7 +117,9 @@ No teste, 62 dos 72 pedidos atrasados pelas datas foram avaliados **antes** de s
 
 ### Sua lista de tarefas
 1. Revisar `data/revisao/revisao_manual.csv` seguindo `data/revisao/COMO_REVISAR.md` (bloco
-   `teste` primeiro; coluna vazia = aceita o sugerido). Salvar como CSV UTF-8 separado por vírgula.
+   `teste` primeiro). Marque `x` na coluna `conferido` de **cada** linha que ler; o teste inteiro
+   precisa de `x`. Correção vazia numa linha com `x` = aceita o sugerido. Salvar como CSV UTF-8
+   separado por vírgula.
 2. Rodar `python src/recalcular.py`. Ele valida a planilha, aplica as correções, mede Gemini ×
    humano, refaz tabelas, ICs e README e diz se é preciso retreinar.
 3. Se ele recomendar retreino, rodar os comandos que ele imprime (Kaggle, cerca de 20 min de

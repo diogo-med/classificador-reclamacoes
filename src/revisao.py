@@ -18,7 +18,9 @@ N_ALEATORIO = 150
 N_DISCORDANCIA = 150
 SEP = ";"  # separador das categorias dentro da célula
 COLUNAS = ["review_id", "bloco", "nota", "texto", "sentimento_sugerido", "categorias_sugeridas",
-           "sentimento_revisado", "categorias_revisadas", "observacao"]
+           "conferido", "sentimento_revisado", "categorias_revisadas", "observacao"]
+# conferido: o revisor marca "x" em cada linha que de fato leu; recalcular.py exige x em todo o teste
+COLUNAS_PREENCHIDAS = ["conferido", "sentimento_revisado", "categorias_revisadas", "observacao"]
 
 
 def discordam(a: pd.DataFrame, b: pd.DataFrame) -> set:
@@ -44,7 +46,7 @@ def montar_planilha(amostra, gemini, r9b, seed=SEED) -> pd.DataFrame:
         "review_id": df["review_id"], "bloco": df["bloco"], "nota": df["nota"], "texto": df["texto"],
         "sentimento_sugerido": df["sentimento"].fillna(""),
         "categorias_sugeridas": df["categorias"].apply(lambda c: SEP.join(c) if isinstance(c, list) else ""),
-        "sentimento_revisado": "", "categorias_revisadas": "", "observacao": "",
+        "conferido": "", "sentimento_revisado": "", "categorias_revisadas": "", "observacao": "",
     })[COLUNAS]
 
 
@@ -60,7 +62,8 @@ def main():
     destino = DATA_REVISAO / "revisao_manual.csv"
     if destino.exists():
         atual = pd.read_csv(destino, dtype=str, keep_default_na=False)
-        if (atual[["sentimento_revisado", "categorias_revisadas", "observacao"]] != "").any().any():
+        preenchidas = [c for c in COLUNAS_PREENCHIDAS if c in atual.columns]
+        if (atual[preenchidas] != "").any().any():
             sys.exit(f"{destino} já tem revisões preenchidas; não vou sobrescrever.")
     planilha = montar_planilha(amostra, gemini, r9b)
     DATA_REVISAO.mkdir(parents=True, exist_ok=True)

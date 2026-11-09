@@ -257,3 +257,10 @@ avaliada antes da entrega (`resultados/avaliacao_antes_da_entrega.json`): o text
 recebi", o que explica a cobertura baixa de `atraso` sozinho. A regra de revisão
 (`data/revisao/COMO_REVISAR.md`) manda rotular pelo que o texto diz quando foi escrito. Nada disso
 mudou prompts, rótulos ou o modelo.
+
+**D36. Coluna `conferido` na planilha de revisão** (pedido do usuário, 09/11). Sem ela, "coluna
+vazia" não distingue "li e aceitei" de "não li". Regras em `recalcular.py`: o teste inteiro precisa
+de `x` (senão recusa e diz quantas faltam, sem gravar nada); nos blocos de treino só linhas com `x`
+entram; correção sem `x` ou marca diferente de `x` é erro de preenchimento. O README mostra quantas
+linhas de cada bloco foram conferidas (`resultados/revisao_humana.json`). A planilha foi regenerada
+com a coluna nova; linhas e valores sugeridos são os mesmos de antes.

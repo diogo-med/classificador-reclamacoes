@@ -11,10 +11,20 @@ Ordem dos blocos (coluna `bloco`):
    rótulo dos dois, fora as já sorteadas): onde Gemini e Qwen3.5-9B discordaram; casos difíceis.
    Serve para corrigir rótulos de treino, **não** para estimar a taxa de erro (é enviesado).
 
-Se faltar tempo, revise pelo menos o bloco `teste`.
+Se faltar tempo, revise pelo menos o bloco `teste`: ele é **obrigatório por inteiro** (ver
+`conferido` abaixo). Os blocos de treino podem ficar parciais.
 
 ## Regra de preenchimento
-- **Coluna revisada vazia = aceito o sugerido.** Só preencha quando discordar.
+- **`conferido`: marque `x` em cada linha que você de fato leu e decidiu**, concordando ou não
+  com o sugerido. É o que distingue "li e aceitei" de "não li".
+  - Bloco `teste`: **todas** as 500 linhas precisam de `x`. Se faltar alguma, `recalcular.py`
+    recusa rodar e diz quantas faltam.
+  - Blocos de treino: linhas sem `x` são ignoradas (ficam com o rótulo do Gemini e não entram
+    na concordância Gemini × humano). Pode parar no meio.
+  - Correção ou observação numa linha sem `x` é erro: o script aponta a linha.
+  - Só `x` (ou `X`) ou vazio; qualquer outro valor é erro.
+  - O README mostra quantas linhas de cada bloco foram conferidas.
+- **Coluna revisada vazia (numa linha com `x`) = aceito o sugerido.** Só preencha quando discordar.
 - `sentimento_revisado`: `positivo`, `neutro` ou `negativo`.
 - `categorias_revisadas`: a lista **completa** correta, separada por `;`
   (ex.: `atraso;nao_recebido`). Não escreva só a diferença.
@@ -74,5 +84,7 @@ existindo e é declarado no README.
 ```bash
 python src/recalcular.py
 ```
-Ele valida a planilha (aponta linhas com valor inválido), aplica as correções, mede a
-concordância Gemini × humano, regenera métricas, tabelas e README e diz se é preciso retreinar.
+Ele confere a coluna `conferido` (recusa se faltar `x` no teste), valida a planilha (aponta
+linhas com valor inválido), aplica as correções das linhas com `x`, mede a concordância Gemini ×
+humano, regenera métricas, tabelas e README (incluindo quantas linhas de cada bloco foram
+conferidas) e diz se é preciso retreinar.

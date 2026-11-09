@@ -112,6 +112,7 @@ máquina mais livre; se falhar outra vez, fica documentada como bloqueada.
 | qwen3.5:2b (q8_0, Ollama local, CPU) | 20 avaliações da validação | 9,6 s (1ª chamada 25 s, com carga do modelo) | 500 × 9,6 s ≈ 80 min | abaixo de 2 h: baseline 2B pode rodar local |
 | qwen3.5:9b (Q4_K_M, Ollama local, CPU), 1ª tentativa | 20 avaliações da validação | não medida (morto por memória, código 137) | — | — |
 | qwen3.5:9b (Q4_K_M, Ollama local, CPU), 2ª tentativa | 20 avaliações da validação | 28,6 s (27,0 s sem a 1ª) | teste completo: 500 × 28,6 s ≈ 4 h; eficiência: 100 × 28,6 s ≈ 48 min | baseline no teste e rotulagem → Kaggle; eficiência (100) → local |
+| cr-qwen2b-lora (LoRA, q8_0, Ollama local, CPU) | 20 avaliações da validação (`conferir_ollama.py`) | ≈ 6,4 s (2 min 8 s para as 20, incluindo `ollama create` e a carga) | 500 × 6,4 s ≈ 53 min | abaixo de 2 h: previsões do teste via Ollama rodam local |
 
 Medições feitas na validação (não no teste) para não olhar saídas do teste.
 

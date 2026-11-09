@@ -2,7 +2,7 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 09/11/2026, 05:50
+## Estado em 09/11/2026, 07:45
 
 - 05:10: checagem de lote (D29): 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100.
 - Rotulagem do Gemini concluída para a cota de hoje: **2.050 rótulos** (teste 500, validação 350,
@@ -10,6 +10,11 @@ Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 - Dataset privado do Kaggle atualizado; kernel `diogomede/cr-treino-qwen2b-lora` v1 enviado
   (treino com 1.200, privado, T4). Monitor em segundo plano até terminar.
   Às 06:10 ainda na fila do Kaggle (esperando T4); às 07:08 rodando.
+- **Treino do 2B concluído às 07:15** (17,7 min na T4, 1.200 exemplos, checkpoint-150). Validação
+  (contra rótulos do Gemini): 100% no esquema, F1 macro 0,855, sentimento 92,9%. GGUFs q8_0 e
+  Q4_K_M copiados para `modelos/` (fora do git).
+- Ollama local × Kaggle (20 da validação): rótulos idênticos 20/20, texto 17/20.
+- Rodando: previsões do teste com `cr-qwen2b-lora` no Ollama (~53 min estimados).
 - Planilha `data/revisao/revisao_manual.csv` gerada: teste 500, treino aleatório 150,
   discordância 74 (todas as disponíveis).
 

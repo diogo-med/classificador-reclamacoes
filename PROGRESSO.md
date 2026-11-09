@@ -2,7 +2,7 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 08/11/2026, 23:00
+## Estado em 08/11/2026, 23:40
 
 ### Bloqueio principal: cota do Gemini
 O nível gratuito do `gemini-3.6-flash` permite **20 requisições/dia** (D19). Rotuladas até agora:
@@ -34,8 +34,11 @@ O restante vai em lotes de 100, com teste e validação primeiro.
 - `src/checar_lote.py` pronto (D29): roda primeiro às 05:10.
 - `avaliar.py` testado com os dados reais parciais (tabelas parciais não commitadas).
 
+- Pipeline validado com o 0.8B (rótulos parciais, fora dos resultados, D28/D32): treino 5,4 min
+  na T4, GGUF q8_0, prefixo idêntico ao da demo, Ollama × Kaggle com rótulos idênticos em 20/20.
+  App Gradio testado com esse GGUF: subiu, respondeu (2,4 s, JSON no esquema) e foi encerrado.
+
 ### Rodando em segundo plano (pausa até a cota renovar)
-- Kaggle `cr-treino-qwen08b-lora` (só pipeline, rótulos parciais, fora dos resultados, D28).
 - Alarme às 05:10 de 9/11: `checar_lote.py`, depois a rotulagem do Gemini.
 
 ### Falta

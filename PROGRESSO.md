@@ -2,7 +2,7 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 09/11/2026, 07:45
+## Estado em 09/11/2026, 08:50
 
 - 05:10: checagem de lote (D29): 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100.
 - Rotulagem do Gemini concluída para a cota de hoje: **2.050 rótulos** (teste 500, validação 350,
@@ -14,7 +14,11 @@ Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
   (contra rótulos do Gemini): 100% no esquema, F1 macro 0,855, sentimento 92,9%. GGUFs q8_0 e
   Q4_K_M copiados para `modelos/` (fora do git).
 - Ollama local × Kaggle (20 da validação): rótulos idênticos 20/20, texto 17/20.
-- Rodando: previsões do teste com `cr-qwen2b-lora` no Ollama (~53 min estimados).
+- Previsões do teste com `cr-qwen2b-lora` no Ollama: 500/500 (08:25).
+- `avaliar.py` rodado (provisório): F1 macro LoRA 0,803 (Kaggle) / 0,808 (Ollama q8_0), 9B 0,727,
+  TF-IDF 0,683, 2B 0,525. Tabelas regeneradas no fim, depois da eficiência.
+- Análise de 10 erros: `resultados/analise_erros.md`.
+- Rodando: eficiência do `cr-qwen2b-lora` (livre e com format=esquema), 100 avaliações cada.
 - Planilha `data/revisao/revisao_manual.csv` gerada: teste 500, treino aleatório 150,
   discordância 74 (todas as disponíveis).
 

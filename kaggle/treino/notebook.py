@@ -40,7 +40,12 @@ from metricas import metricas_categorias, metricas_sentimento, metricas_formato
 from prompts import mensagens_baseline
 
 amostra = pd.read_parquet(Path(SRC) / "amostra.parquet")
-rotulos = pd.read_parquet(Path(SRC) / "rotulos_gemini.parquet")
+# rótulos revisados por humano (se já existirem) ou os do Gemini
+arq_rotulos = Path(SRC) / "rotulos_revisados.parquet"
+if not arq_rotulos.exists():
+    arq_rotulos = Path(SRC) / "rotulos_gemini.parquet"
+print("rótulos:", arq_rotulos.name)
+rotulos = pd.read_parquet(arq_rotulos)
 df = amostra.merge(rotulos[["review_id", "sentimento", "categorias", "resumo"]], on="review_id")
 df["categorias"] = df["categorias"].apply(list)
 print(df["split"].value_counts())

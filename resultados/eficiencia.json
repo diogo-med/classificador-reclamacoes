@@ -17,11 +17,24 @@
       "tokens_entrada_medio": 137.34,
       "tokens_por_segundo": 10.92576112461934,
       "custo_por_1000": "US$ 0 de API (hardware próprio)"
+    },
+    "Qwen3.5-9B sem ajuste (Q4_K_M)": {
+      "onde": "Ollama local (CPU)",
+      "n": 100,
+      "latencia_media_s": 26.13678,
+      "latencia_p95_s": 36.373400000000004,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "tokens_saida_medio": 42.43,
+      "tokens_entrada_medio": 137.34,
+      "tokens_por_segundo": 3.407231853227545,
+      "custo_por_1000": "US$ 0 de API (hardware próprio)"
     }
   },
   "premissas": [
     "Mesma amostra fixa de 100 avaliações do teste para os modelos locais (`resultados/ids_eficiencia.txt`), uma chamada por avaliação, sem paralelismo, temperatura 0, raciocínio desligado, num_ctx 2048, 1 chamada de aquecimento descartada.",
     "Latência = tempo de parede da requisição HTTP ao Ollama local (inclui processar o prompt e gerar a resposta).",
-    "Modelos locais: custo marginal de API = 0; o custo real é o hardware/energia, que não estimamos."
+    "Modelos locais: custo marginal de API = 0; o custo real é o hardware/energia, que não estimamos.",
+    "Preço gemini-3.6-flash: US$ 0.75/1M tokens de entrada e US$ 3.75/1M de saída (https://aistudio.google.com/docs/pricing (redirecionado de ai.google.dev/gemini-api/docs/pricing), nível pago Standard, texto, consultado em 2026-11-08). Preço promocional válido até 31/12/2026; a partir de 01/01/2027 passa a US$ 1,50 (entrada) e US$ 7,50 (saída). A saída inclui tokens de raciocínio. Batch API: metade do preço. O nível gratuito não cobra, mas é limitado a 20 requisições/dia."
   ]
 }

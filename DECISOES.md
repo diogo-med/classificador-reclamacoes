@@ -202,3 +202,11 @@ F1 = 1,0 por definição, um número sem significado que não deve aparecer. A l
 "Gemini (prompt de rotulagem, lotes de 100) vs. humano" só é calculada quando existem
 `data/processed/rotulos_revisados.parquet` (gerado pelo `recalcular.py`). A tabela também informa
 quantas avaliações do teste foram rotuladas em cada tamanho de lote (28 em lotes de 25, de 08/11).
+
+**D31. llama-cpp-python 0.3.36 suporta o Qwen3.5.** Testado em 08/11 com um GGUF **público**
+(`unsloth/Qwen3.5-2B-GGUF`, arquivo `Qwen3.5-2B-Q4_K_M.gguf`, baixado do Hugging Face para
+`modelos/publico/`, fora do git), sem usar arquivos do Ollama: carregou em 1,9 s e, com o
+prefixo `prompt_chat()` do treino e temperatura 0, gerou JSON válido no esquema em 3,3 s
+(130 tokens de entrada, 39 de saída), na mesma CPU. A versão fica fixada em `requirements.txt`
+e no `requirements.txt` do Space (wheel de CPU de abetlen.github.io). O projetor de visão
+(`mmproj`) não é necessário para uso só com texto.

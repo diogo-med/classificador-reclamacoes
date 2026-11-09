@@ -1,0 +1,9 @@
+{
+  "gemini-3.6-flash": {
+    "entrada_usd_por_1m": 0.75,
+    "saida_usd_por_1m": 3.75,
+    "fonte": "https://aistudio.google.com/docs/pricing (redirecionado de ai.google.dev/gemini-api/docs/pricing), nível pago Standard, texto",
+    "data": "2026-11-08",
+    "nota": "Preço promocional válido até 31/12/2026; a partir de 01/01/2027 passa a US$ 1,50 (entrada) e US$ 7,50 (saída). A saída inclui tokens de raciocínio. Batch API: metade do preço. O nível gratuito não cobra, mas é limitado a 20 requisições/dia."
+  }
+}

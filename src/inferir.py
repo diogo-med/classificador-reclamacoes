@@ -52,7 +52,11 @@ def chamar_gemini_livre(cliente, prompt: str, modelo: str = MODELO_GEMINI):
         inicio = time.time()
         try:
             r = cliente.models.generate_content(model=modelo, contents=prompt, config=config)
-            return r.text, r.model_version, time.time() - inicio
+            u = r.usage_metadata
+            info = {"prompt_eval_count": u.prompt_token_count,
+                    # tokens cobrados como saída = resposta + raciocínio interno
+                    "eval_count": (u.candidates_token_count or 0) + (u.thoughts_token_count or 0)}
+            return r.text, r.model_version, time.time() - inicio, info
         except errors.APIError as e:
             if e.code == 429 or e.code >= 500:
                 m = re.search(r"retry in ([\d.]+)s", str(e))
@@ -81,7 +85,7 @@ def inferir(df, backend, modelo, saida: Path, url="http://localhost:11434",
             resposta, versao, seg, info = chamar_ollama(
                 prompt, modelo, ESQUEMA_SAIDA if restrito else None, url, num_predict=512, num_ctx=2048)
         else:
-            resposta, versao, seg = chamar_gemini_livre(cliente, prompt, modelo or MODELO_GEMINI)
+            resposta, versao, seg, info = chamar_gemini_livre(cliente, prompt, modelo or MODELO_GEMINI)
         reg = {"review_id": rid, "resposta": resposta, "modelo": versao,
                "prompt": VERSAO_BASELINE, "restrito": restrito, "segundos": round(seg, 3), **info}
         with open(saida, "a", encoding="utf-8") as f:

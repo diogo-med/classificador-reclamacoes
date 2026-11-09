@@ -2,10 +2,13 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 09/11/2026, 05:15
+## Estado em 09/11/2026, 05:50
 
-05:10: checagem de lote feita (D29: 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100).
-Rotulagem rodando: 18 lotes de 100 (log em `outputs/log_rotulagem_0911.txt`).
+- 05:10: checagem de lote (D29): 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100.
+- Rotulagem do Gemini concluída para a cota de hoje: **2.050 rótulos** (teste 500, validação 350,
+  treino 1.200), 18 lotes de 100 sem nenhuma resposta inválida (2 erros 503 com nova tentativa).
+- Dataset privado do Kaggle atualizado; kernel `diogomede/cr-treino-qwen2b-lora` v1 enviado
+  (treino com 1.200, privado, T4). Monitor em segundo plano até terminar.
 
 ### 03:50
 

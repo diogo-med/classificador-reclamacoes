@@ -174,3 +174,9 @@ probabilidade, quando nenhuma passa de 0,5), igual aos LLMs.
 `kaggle/gerar_notebooks.py`. Diferenças de código ficam legíveis no git, e um único modelo de
 notebook gera os kernels do 0.8B e do 2B. O código de `src/` vai junto no dataset privado, para
 o notebook usar exatamente o mesmo prompt, esquema e métricas do repositório.
+
+**D28. Treino do Qwen3.5-0.8B só valida o pipeline.** Roda com os 250 rótulos parciais
+disponíveis em 08/11 (202 de treino, 20 de validação), só para testar de ponta a ponta instalação,
+formato, treino, inferência e exportação GGUF antes de gastar GPU no 2B. **Esses rótulos são
+parciais e esse treino não entra em nenhum resultado:** a linha do 0.8B foi retirada de
+`src/avaliar.py`, e suas saídas ficam só em `outputs/`.

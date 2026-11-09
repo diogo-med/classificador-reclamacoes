@@ -37,11 +37,11 @@ from metricas import (binarizar, checagem_atraso, concordancia,  # noqa: E402
 PREDICOES = RESULTADOS / "predicoes"
 
 # nome exibido -> (arquivo de previsões no teste, observação)
+# O treino do Qwen3.5-0.8B só valida o pipeline (rótulos parciais) e NÃO entra aqui.
 MODELOS = {
     "Qwen3.5-2B sem ajuste (Ollama q8_0)": ("qwen2b_teste.jsonl", ""),
     "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": ("qwen9b_teste.jsonl", ""),
     "Gemini 3.6 Flash (prompt de baseline)": ("gemini_teste.jsonl", "favorecida"),
-    "Qwen3.5-0.8B + LoRA (validação do pipeline)": ("qwen08b_lora_teste.jsonl", ""),
     "Qwen3.5-2B + LoRA (este projeto)": ("qwen2b_lora_teste.jsonl", ""),
     "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": ("qwen2b_lora_ollama_teste.jsonl", ""),
 }

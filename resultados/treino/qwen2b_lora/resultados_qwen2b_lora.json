@@ -1,0 +1,118 @@
+{
+ "modelo_base": "unsloth/Qwen3.5-2B",
+ "epocas": 3,
+ "lr": 0.0002,
+ "r": 16,
+ "alpha": 16,
+ "tempo_treino_min": 17.7076273560524,
+ "melhor_checkpoint": "/kaggle/working/checkpoints/checkpoint-150",
+ "n_treino": 1200,
+ "n_validacao": 350,
+ "bf16": false,
+ "gpu": "Tesla T4",
+ "versoes": {
+  "unsloth": "2026.11.3",
+  "unsloth_zoo": "2026.11.3",
+  "transformers": "5.17.0",
+  "trl": "1.15.0",
+  "peft": "0.21.2",
+  "torch": "2.11.0+cu130"
+ },
+ "tempo_inferencia_validacao_s": 122.93311333656311,
+ "validacao": {
+  "json_valido_pct": 100.0,
+  "json_no_esquema_pct": 100.0,
+  "categorias": {
+   "f1_macro": 0.8547935114488621,
+   "f1_micro": 0.8844339622641509,
+   "acerto_exato": 0.8085714285714286,
+   "por_categoria": {
+    "atraso": {
+     "f1": 0.926829268292683,
+     "suporte": 43,
+     "matriz": {
+      "vp": 38,
+      "fp": 1,
+      "fn": 5,
+      "vn": 306
+     }
+    },
+    "nao_recebido": {
+     "f1": 0.8888888888888888,
+     "suporte": 62,
+     "matriz": {
+      "vp": 56,
+      "fp": 8,
+      "fn": 6,
+      "vn": 280
+     }
+    },
+    "incompleto": {
+     "f1": 0.927536231884058,
+     "suporte": 37,
+     "matriz": {
+      "vp": 32,
+      "fp": 0,
+      "fn": 5,
+      "vn": 313
+     }
+    },
+    "produto_errado": {
+     "f1": 0.9135802469135802,
+     "suporte": 41,
+     "matriz": {
+      "vp": 37,
+      "fp": 3,
+      "fn": 4,
+      "vn": 306
+     }
+    },
+    "defeito_qualidade": {
+     "f1": 0.946236559139785,
+     "suporte": 48,
+     "matriz": {
+      "vp": 44,
+      "fp": 1,
+      "fn": 4,
+      "vn": 301
+     }
+    },
+    "atendimento": {
+     "f1": 0.7184466019417476,
+     "suporte": 57,
+     "matriz": {
+      "vp": 37,
+      "fp": 9,
+      "fn": 20,
+      "vn": 284
+     }
+    },
+    "elogio": {
+     "f1": 0.9516129032258065,
+     "suporte": 120,
+     "matriz": {
+      "vp": 118,
+      "fp": 10,
+      "fn": 2,
+      "vn": 220
+     }
+    },
+    "outro": {
+     "f1": 0.5652173913043478,
+     "suporte": 26,
+     "matriz": {
+      "vp": 13,
+      "fp": 7,
+      "fn": 13,
+      "vn": 317
+     }
+    }
+   }
+  },
+  "sentimento": {
+   "acuracia": 0.9285714285714286,
+   "f1_macro": 0.8084047213537032
+  }
+ },
+ "tempo_inferencia_teste_s": 132.12222504615784
+}

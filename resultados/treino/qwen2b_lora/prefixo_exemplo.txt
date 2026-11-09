@@ -1,0 +1,9 @@
+<|im_start|>user
+Classifique a avaliação de cliente de e-commerce abaixo. Responda só com JSON: {"sentimento": "positivo|neutro|negativo", "categorias": [...], "resumo": "..."}. Categorias possíveis (uma ou mais): atraso, nao_recebido, incompleto, produto_errado, defeito_qualidade, atendimento, elogio, outro. Use elogio só se não houver problema. Resumo: uma frase curta em português.
+
+Avaliação: Produto chegou quebrado.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+

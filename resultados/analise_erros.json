@@ -1,0 +1,197 @@
+{
+ "referencia": "Gemini (provisório)",
+ "previsoes": "qwen2b_lora_teste.jsonl",
+ "n_teste": 500,
+ "n_erros": 123,
+ "so_categorias": 79,
+ "so_sentimento": 14,
+ "exemplos": [
+  {
+   "review_id": "083cea852e4bef40b5d4d436da1fc8ef",
+   "nota": 2,
+   "atraso_real": true,
+   "texto": "O prazo de entrega não foi cumprida e só comprei para dar de presente para uma mãe que está prestes a ganhar bebê. Só comprei pelo site por conta da data de entrega 19/05, terá o parto sem a bolsa.",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso",
+     "nao_recebido"
+    ]
+   }
+  },
+  {
+   "review_id": "2a67ce1978f14fe4314a88fd8801f2ad",
+   "nota": 1,
+   "atraso_real": false,
+   "texto": "A embalagem parece original, mas logo após a instalação a própria impressora informa que o suprimento NÃO É HP. No cartucho falta indicação da cor e o nome HP vem numa etiqueta de papel e não pintada.",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "produto_errado"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "defeito_qualidade"
+    ]
+   }
+  },
+  {
+   "review_id": "4a746391af112fb32935992ad3d0e913",
+   "nota": 2,
+   "atraso_real": false,
+   "texto": "Qanto a maquina de tosa recebi super rapido,porem fiz junto na mesma data o pedido do cortador de unha.O qual foi cobrado na mesma fatura com o mesmo cartão de crédito,porem até a presente data não.",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "incompleto",
+     "nao_recebido"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso",
+     "nao_recebido"
+    ]
+   }
+  },
+  {
+   "review_id": "603b745b5d527963d9d3d31efc00c647",
+   "nota": 1,
+   "atraso_real": false,
+   "texto": "Comprei 3 transformadores, paguei 135 reais de frete, pra o produto vim pelos Correios, aí já viu, recebi em casa um comunicado dos correios, pra ir retirar os produtos, aí paguei 3 e recebi 1",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atendimento",
+     "incompleto"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "outro"
+    ]
+   }
+  },
+  {
+   "review_id": "6724babb3b9952660bc345b5f5a4db07",
+   "nota": 1,
+   "atraso_real": false,
+   "texto": "Nao compro mais na lannister. Se é parceiro da lannister ou não essa targaryen jamais uso novamente. Quando eu ler que é dessa empresa saio correndo. Um absurdo. Quase um mês para entregar. Extra.com ok",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso",
+     "nao_recebido"
+    ]
+   }
+  },
+  {
+   "review_id": "6a4d0426ed5c1f61bbdc1a03aa9f499b",
+   "nota": 2,
+   "atraso_real": false,
+   "texto": "O drone é lindo , porém a bateria não dura nada, e é um pouco chatinho de montar.",
+   "referencia": {
+    "sentimento": "neutro",
+    "categorias": [
+     "defeito_qualidade"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "defeito_qualidade"
+    ]
+   }
+  },
+  {
+   "review_id": "755064345b43800f2321cb1b7fc4c021",
+   "nota": 1,
+   "atraso_real": true,
+   "texto": "Não recebi meu produto até hj. E não recebi nenhuma satisfação.",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atendimento",
+     "nao_recebido"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "nao_recebido"
+    ]
+   }
+  },
+  {
+   "review_id": "83d69188d68dd3c1e81f971f1415cdff",
+   "nota": 5,
+   "atraso_real": false,
+   "texto": "Sim, recebi o produto correto, e no prazo estabelecido. A caixa estava perfeitamente lacrada e, quando aberta, tudo estava aparentemente normal. Todavia, não este o produto, mas creio que está tudo ok",
+   "referencia": {
+    "sentimento": "positivo",
+    "categorias": [
+     "elogio"
+    ]
+   },
+   "modelo": {
+    "sentimento": "neutro",
+    "categorias": [
+     "outro"
+    ]
+   }
+  },
+  {
+   "review_id": "cc588946716003944b5e99a5660c802a",
+   "nota": 1,
+   "atraso_real": false,
+   "texto": "Fia a compra de 4 jogos de lençóis de cetim, e só recebi 2 jogos!! Aguardo contato. Faltaram os jogos na cor vermelha e cobre!! Urgência pois são para presentear um amigo em data de casamento!",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atendimento",
+     "incompleto"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "incompleto"
+    ]
+   }
+  },
+  {
+   "review_id": "e466966fd83c4e334f7494ad94ebab24",
+   "nota": 3,
+   "atraso_real": false,
+   "texto": "Poderia ser melhor. Demoraram muito pra colocar as coisas no correio",
+   "referencia": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atraso"
+    ]
+   },
+   "modelo": {
+    "sentimento": "negativo",
+    "categorias": [
+     "atendimento"
+    ]
+   }
+  }
+ ]
+}

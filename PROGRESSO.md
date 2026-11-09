@@ -2,39 +2,36 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 08/11/2026 (retomada após a queda do VS Code)
+## Estado em 08/11/2026, ~22h
+
+### Bloqueio principal: cota do Gemini
+O nível gratuito do `gemini-3.6-flash` permite **20 requisições/dia** (D19). Rotuladas até agora:
+250 avaliações (202 treino, 28 teste, 20 validação). A cota renova por volta das **05:00 de 9/11**.
+O restante vai em lotes de 100, com teste e validação primeiro.
 
 ### Feito
-- **Etapa 1 (parcial):** estrutura de pastas, `.gitignore`, `.env.example`, `data/README.md`,
-  `docs/plano.md` (renomeado), `DECISOES.md`, `src/config.py` (caminhos, seed 42).
-  Falta: `requirements.txt` fixado, `tests/`, `ESTUDO.md`, README completo.
-- **Etapa 2:** `src/preparar_dados.py` gera `data/interim/avaliacoes_com_texto.parquet` (40.312
-  avaliações com texto) e `resultados/estatisticas_dados.json`.
-- **Etapa 3:** `src/amostrar.py` gera `data/processed/amostra.parquet`: 4.000 avaliações,
-  treino 3.150 / validação 350 / teste 500, estratificado por nota (`resultados/amostragem.json`).
-- **Etapa 4:** 200 avaliações do treino lidas; 8 categorias definidas em `src/prompts.py`
-  (`atendimento` no lugar de `sem_resposta`; ver D09-D13).
-- **Etapa 5 (em andamento):** `src/rotular.py` + `src/esquema.py` + `PROMPT_ROTULAGEM` v1.
-  Modelo `gemini-3.6-flash`. Checkpoint em `outputs/rotulos_gemini.jsonl` (fora do git).
-  Antes da queda: 9 lotes = 225 avaliações rotuladas, todas válidas no esquema. A última rodada
-  parou num 429 que o código tratou como cota diária; uma chamada logo depois passou, então o log
-  agora registra a métrica exata da cota. Rotulagem retomada em segundo plano.
-- `src/inferir.py` (baselines LLM, uma avaliação por chamada) escrito. Medição local do
-  qwen3.5:2b: 9,6 s/avaliação (ver tabela em DECISOES.md). Medição do 9B morreu por falta de
-  memória (D18).
+- Etapas 1-4: estrutura, dados (40.312 com texto), amostra 4.000 (3.150/350/500), categorias.
+- Etapa 5 (parcial): 250/4.000 rotuladas.
+- Etapa 6 (rodando): kernel `diogomede/cr-rotulador-9b` v2 (privado) no Kaggle: Qwen3.5-9B rotula
+  teste + 1.000 do treino e roda os baselines 9B e 2B no teste. A v1 tinha `presence_penalty`
+  1,5 (padrão do Modelfile) e foi substituída pela v2, com 0 (D22).
+- Código pronto e testado (16 testes passando): `rotular.py`, `inferir.py`, `metricas.py`,
+  `avaliar.py` (inclui TF-IDF), `revisao.py`, `recalcular.py`, `importar_kaggle.py`,
+  `kaggle_dataset.py`, `eficiencia.py`, `publicar.py`, `app/app.py`, notebooks do Kaggle
+  (`kaggle/treino/notebook.py` gera os kernels do 0.8B e do 2B).
+- Dataset privado no Kaggle: `diogomede/classificador-reclamacoes-dados`.
+- Preço oficial do Gemini 3.6 Flash salvo em `resultados/precos.json` (fonte e data).
+- Rodando local: eficiência do `qwen3.5:2b` em 100 avaliações fixas do teste.
 
 ### Falta
-Etapas 5 (concluir) a 16.
-
-### Próximos passos
-1. Terminar a rotulagem do Gemini; consolidar em `data/processed/rotulos_gemini.parquet`.
-2. Criar o dataset privado no Kaggle e o kernel do Qwen3.5-9B (segundo rotulador + baseline).
-3. Baseline 2B local no teste; TF-IDF; Gemini baseline.
-4. Notebook de treino (0.8B, depois 2B).
+- Rotulagem do Gemini (9/11 de manhã), consolidar, nova versão do dataset do Kaggle.
+- Treino 0.8B (pipeline) → treino 2B → GGUF → Ollama local → conferência em 20 exemplos.
+- Planilha de revisão (depende do 9B), avaliação final, eficiência do 2B ajustado e do 9B.
+- Cards, README final, ESTUDO.md, artigo.
 
 ### Para retomar
 ```bash
 conda activate classificador-reclamacoes
-python -u src/rotular.py --rotulador gemini --saida outputs/rotulos_gemini.jsonl --pausa 4
+python -u src/rotular.py --rotulador gemini --saida outputs/rotulos_gemini.jsonl --tamanho-lote 100 --pausa 15
+kaggle kernels status diogomede/cr-rotulador-9b
 ```
-(pula os lotes já feitos)

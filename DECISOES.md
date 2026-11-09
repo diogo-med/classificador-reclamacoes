@@ -132,3 +132,44 @@ para todos; o tamanho do lote fica registrado por linha no checkpoint.
 **D20. Orçamento de requisições do Gemini até 10/11.** 9/11: 20 requisições para rotulagem (teste
 e validação completos, mais ~1.200 do treino). 10/11: o baseline do Gemini com uma avaliação por
 chamada no teste (500 requisições) é **inviável** com 20 por dia. Ver D21 quando for executado.
+
+**D21. Linha do Gemini na tabela de qualidade.** O baseline do Gemini com o prompt de baseline
+(uma avaliação por chamada) precisaria de 500 requisições, ou 25 dias de cota gratuita. Fica
+**bloqueado** e com o comando pronto em PROGRESSO.md. No lugar dele, a tabela traz os próprios
+rótulos do Gemini (prompt de rotulagem: few-shot, em lote) como linha de referência do professor.
+Enquanto o teste não for revisado, essa linha é 100% por construção (marcada como favorecida);
+depois da revisão, ela mede exatamente o que a pergunta central precisa: a qualidade do professor
+nos rótulos humanos. A latência do Gemini usa poucas chamadas avulsas (cota), com n declarado.
+
+**D22. `presence_penalty = 0` em todas as chamadas ao Ollama.** O Modelfile oficial do `qwen3.5`
+traz `presence_penalty 1.5`, `temperature 1`, `top_k 20` e `top_p 0.95`. Com temperatura 0, os
+três últimos não importam, mas a penalidade de presença continua alterando os logits e penaliza
+os tokens repetidos que todo JSON tem (aspas, chaves). O modelo ajustado importado com um
+Modelfile próprio não teria essa penalidade, o que tornaria a comparação injusta. Zerei para
+todos. A primeira versão do kernel do 9B rodou com o padrão e foi descartada (só a v2 é usada).
+
+**D23. Formato do treino: prompt/completion com o prefixo do chat template.** O texto de treino é
+`apply_chat_template([user], add_generation_prompt=True, enable_thinking=False)` (que termina em
+`<|im_start|>assistant\n<think>\n\n</think>\n\n`) + JSON + `<|im_end|>`, e a perda só conta no
+JSON. Assim o prefixo do treino é idêntico ao da inferência (transformers, Ollama e llama.cpp).
+Alternativa: aplicar o template na conversa completa (user + assistant). Descartei porque o
+template do Qwen3.5 trata o bloco `<think>` de forma diferente em turnos antigos e no turno de
+geração, e o risco de divergência é exatamente o que o Unsloth aponta como causa mais comum de
+modelo exportado ruim.
+
+**D24. Entrada do modelo ajustado = prompt de baseline.** O 2B ajustado recebe o mesmo prompt
+curto que o 2B sem ajuste. A diferença entre as duas linhas da tabela mede só o efeito do LoRA.
+
+**D25. Licença do modelo e do dataset: CC BY-NC-SA 4.0.** O Qwen3.5 é Apache-2.0, mas o modelo é
+treinado em dados CC BY-NC-SA 4.0 (Olist), e o dataset publicado é derivado deles. Uso a licença
+mais restritiva nos dois. Os rótulos vêm da API do Gemini; os termos de uso da Google sobre
+saídas do modelo ficam citados como ponto de atenção nos cards.
+
+**D26. TF-IDF: C escolhido na validação** entre {0,3; 1; 3; 10} pelo F1 macro, com
+`class_weight="balanced"`, n-gramas 1-2 e pelo menos uma categoria por avaliação (a de maior
+probabilidade, quando nenhuma passa de 0,5), igual aos LLMs.
+
+**D27. Notebooks do Kaggle como `.py` (jupytext) convertidos em `.ipynb`** por
+`kaggle/gerar_notebooks.py`. Diferenças de código ficam legíveis no git, e um único modelo de
+notebook gera os kernels do 0.8B e do 2B. O código de `src/` vai junto no dataset privado, para
+o notebook usar exatamente o mesmo prompt, esquema e métricas do repositório.

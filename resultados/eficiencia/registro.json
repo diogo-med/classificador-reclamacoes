@@ -1,0 +1,6 @@
+{
+  "Qwen3.5-2B sem ajuste (q8_0)": {
+    "arquivo": "qwen3_5_2b_sem_ajuste__q8_0.jsonl",
+    "onde": "Ollama local (CPU)"
+  }
+}

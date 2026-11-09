@@ -1,0 +1,27 @@
+{
+  "hardware": {
+    "resumo": "12th Gen Intel(R) Core(TM) i5-1235U, 12 CPUs lógicas, 15Gi de RAM, sem GPU dedicada (só CPU)",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "cpus": "12",
+    "ram": "15Gi"
+  },
+  "modelos": {
+    "Qwen3.5-2B sem ajuste (q8_0)": {
+      "onde": "Ollama local (CPU)",
+      "n": 100,
+      "latencia_media_s": 7.209519999999999,
+      "latencia_p95_s": 10.01585,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 98.0,
+      "tokens_saida_medio": 47.26,
+      "tokens_entrada_medio": 137.34,
+      "tokens_por_segundo": 10.92576112461934,
+      "custo_por_1000": "US$ 0 de API (hardware próprio)"
+    }
+  },
+  "premissas": [
+    "Mesma amostra fixa de 100 avaliações do teste para os modelos locais (`resultados/ids_eficiencia.txt`), uma chamada por avaliação, sem paralelismo, temperatura 0, raciocínio desligado, num_ctx 2048, 1 chamada de aquecimento descartada.",
+    "Latência = tempo de parede da requisição HTTP ao Ollama local (inclui processar o prompt e gerar a resposta).",
+    "Modelos locais: custo marginal de API = 0; o custo real é o hardware/energia, que não estimamos."
+  ]
+}

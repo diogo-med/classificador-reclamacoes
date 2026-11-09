@@ -129,6 +129,9 @@ resultados = {"modelo_base": MODELO_BASE, "epocas": EPOCAS, "lr": LR, "r": R, "a
               "tempo_treino_min": tempo_treino / 60, "melhor_checkpoint": trainer.state.best_model_checkpoint,
               "n_treino": len(treino), "n_validacao": len(valid), "bf16": bf16,
               "gpu": torch.cuda.get_device_name(0)}
+from importlib.metadata import version
+resultados["versoes"] = {p: version(p) for p in ["unsloth", "unsloth_zoo", "transformers", "trl", "peft", "torch"]}
+print(resultados["versoes"])
 for split in ["validacao", "teste"]:
     parte = amostra[amostra["split"] == split].sort_values("review_id")
     inicio = time.time()

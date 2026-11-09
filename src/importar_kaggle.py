@@ -43,6 +43,10 @@ def importar(nome: str, pasta: Path):
         shutil.copy(pasta / "ollama_modelos.txt", RESULTADOS / "ollama_modelos_kaggle.txt")
     else:
         modelo = nome.removeprefix("treino_")
+        if modelo == "qwen08b_lora":
+            # só validação do pipeline com rótulos parciais (D28): nada vai para resultados/
+            print("0.8B: saídas mantidas só em", pasta)
+            return
         for split in ["teste", "validacao"]:
             origem = pasta / f"pred_{modelo}_{split}.jsonl"
             if origem.exists():

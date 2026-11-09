@@ -1,0 +1,127 @@
+{
+  "descricao": "Gemini 3.6 Flash, mesmas avaliações de treino rotuladas em lotes de 25 e de 100",
+  "splits_usados": [
+    "treino"
+  ],
+  "lote25_vs_lote100": {
+    "n": 100,
+    "sentimento": {
+      "concordancia_pct": 97.0,
+      "kappa": 0.9450448800146547
+    },
+    "categorias": {
+      "atraso": {
+        "concordancia_pct": 99.0,
+        "kappa": 0.96684350132626,
+        "freq_a": 19,
+        "freq_b": 18
+      },
+      "nao_recebido": {
+        "concordancia_pct": 99.0,
+        "kappa": 0.9681528662420382,
+        "freq_a": 20,
+        "freq_b": 19
+      },
+      "incompleto": {
+        "concordancia_pct": 99.0,
+        "kappa": 0.9418604651162791,
+        "freq_a": 10,
+        "freq_b": 9
+      },
+      "produto_errado": {
+        "concordancia_pct": 99.0,
+        "kappa": 0.9508840864440079,
+        "freq_a": 12,
+        "freq_b": 11
+      },
+      "defeito_qualidade": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 18,
+        "freq_b": 18
+      },
+      "atendimento": {
+        "concordancia_pct": 96.0,
+        "kappa": 0.8586572438162544,
+        "freq_a": 15,
+        "freq_b": 19
+      },
+      "elogio": {
+        "concordancia_pct": 99.0,
+        "kappa": 0.9743326488706365,
+        "freq_a": 26,
+        "freq_b": 27
+      },
+      "outro": {
+        "concordancia_pct": 97.0,
+        "kappa": 0.8259860788863109,
+        "freq_a": 11,
+        "freq_b": 8
+      }
+    },
+    "kappa_medio_categorias": 0.9358396113377234,
+    "conjunto_identico_pct": 92.0
+  },
+  "piso_de_ruido_lote25_vs_lote25": {
+    "n": 25,
+    "sentimento": {
+      "concordancia_pct": 92.0,
+      "kappa": 0.8120300751879699
+    },
+    "categorias": {
+      "atraso": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 6,
+        "freq_b": 6
+      },
+      "nao_recebido": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 8,
+        "freq_b": 8
+      },
+      "incompleto": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 2,
+        "freq_b": 2
+      },
+      "produto_errado": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 3,
+        "freq_b": 3
+      },
+      "defeito_qualidade": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 4,
+        "freq_b": 4
+      },
+      "atendimento": {
+        "concordancia_pct": 96.0,
+        "kappa": 0.8648648648648649,
+        "freq_a": 4,
+        "freq_b": 5
+      },
+      "elogio": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 6,
+        "freq_b": 6
+      },
+      "outro": {
+        "concordancia_pct": 100.0,
+        "kappa": 1.0,
+        "freq_a": 2,
+        "freq_b": 2
+      }
+    },
+    "kappa_medio_categorias": 0.9831081081081081,
+    "conjunto_identico_pct": 96.0
+  },
+  "queda_conjunto_identico_pp": 4.0,
+  "regra": "usar lotes de 50 se a queda passar de 10 p.p.",
+  "decisao": "lotes de 100"
+}

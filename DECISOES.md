@@ -196,6 +196,11 @@ para preservar o mínimo de 2.000 rotuladas em 9/11 (250 + 18 × 100 = 2.050). O
 checagem ficam em `outputs/checagem_lote/` e não substituem os originais. Resultado em
 `resultados/checagem_lote.json`.
 
+**Resultado (09/11, 05:10):** lote 25 × lote 100 (n=100): conjunto de categorias idêntico
+92,0%, sentimento 97,0%. Piso de ruído 25 × 25 (n=25): 96,0% e 92,0%. Queda de 4,0 p.p., abaixo
+do limiar de 10 → o restante segue em **lotes de 100**. Ressalva: o piso tem só 25 avaliações,
+então cada avaliação vale 4 p.p.; a checagem descarta uma degradação grande, não uma pequena.
+
 **D30. Linha do Gemini na tabela de qualidade = "pendente de revisão" até o `recalcular.py`.**
 Com a referência provisória (rótulos do Gemini), comparar os rótulos do Gemini com eles mesmos dá
 F1 = 1,0 por definição, um número sem significado que não deve aparecer. A linha

@@ -7,7 +7,8 @@ Cada linha é uma avaliação com o rótulo sugerido pelo Gemini (`sentimento_su
 Ordem dos blocos (coluna `bloco`):
 1. `teste` (500): **prioridade máxima**. É a referência de todas as métricas.
 2. `treino_aleatorio` (150): sorteio do treino; mede a taxa de erro do Gemini no treino.
-3. `treino_discordancia` (até 150): onde Gemini e Qwen3.5-9B discordaram; casos difíceis.
+3. `treino_discordancia` (até 150; saíram 74, todas as discordâncias disponíveis no treino com
+   rótulo dos dois, fora as já sorteadas): onde Gemini e Qwen3.5-9B discordaram; casos difíceis.
    Serve para corrigir rótulos de treino, **não** para estimar a taxa de erro (é enviesado).
 
 Se faltar tempo, revise pelo menos o bloco `teste`.

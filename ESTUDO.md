@@ -48,7 +48,11 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
   A concordância no teste não é usada para mudar nada (seria vazamento).
 - **Checagem independente:** `atraso_real` vem das datas, não de LLM. Se o rótulo `atraso`
   estiver certo, ele deve se concentrar nos pedidos que realmente atrasaram. É uma medida de
-  validade que não depende de nenhum modelo.
+  validade que não depende de nenhum modelo. Ela mostrou algo que eu não esperava: a maioria dos
+  pedidos atrasados do teste foi avaliada **antes** da entrega
+  (`resultados/avaliacao_antes_da_entrega.json`). O cliente escreve "não recebi", não "atrasou";
+  por isso a comparação justa é `atraso` **ou** `nao_recebido`, nas duas direções (cobertura e
+  precisão, com números absolutos).
 
 ## 6. Modelo e LoRA
 - **Qwen3.5-2B:** pequeno o bastante para CPU, multilíngue (português bom), com suporte no Unsloth.
@@ -82,6 +86,10 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
 - **Sentimento à parte:** acurácia e F1 macro com 3 classes.
 - **% JSON válido e % no esquema:** um classificador que quebra o formato não serve em produção.
   Resposta inválida conta como "nenhuma categoria" (erro), não é descartada.
+- **IC de 95% por bootstrap pareado:** 1.000 reamostragens das 500 avaliações do teste, as
+  mesmas para todos os modelos, então a diferença entre dois modelos sai reamostra a reamostra
+  (o que reduz a variância da diferença em relação a dois ICs independentes). Cobre só o acaso
+  da amostra de teste; não cobre erro de rótulo nem variação entre treinos.
 - **Eficiência:** mesma CPU, mesma amostra de 100, uma chamada por vez, aquecimento descartado;
   média e p95 (a cauda importa para SLA). Custo do Gemini com preço oficial, fonte e data.
 
@@ -95,8 +103,8 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
    humanos, às vezes sim, porque o treino suaviza erros aleatórios do professor. Isso só aparece
    depois da revisão.
 4. **Por que LoRA e não fine-tuning completo?** Cabe numa GPU gratuita, treina em minutos, o
-   adaptador é pequeno e o risco de esquecer o conhecimento geral é menor. Com 3 mil exemplos, o
-   ganho de um ajuste completo seria pequeno.
+   adaptador é pequeno e o risco de esquecer o conhecimento geral é menor. Com 1.200 exemplos, o
+   ganho de um ajuste completo seria pequeno e o risco de sobreajuste, maior.
 5. **Como evitou vazamento de teste?** Divisão por nota antes de ler textos, versionada no git;
    categorias, exemplos e hiperparâmetros só do treino e da validação.
 6. **Por que F1 macro?** Classes desbalanceadas: o micro seria dominado por `elogio`.
@@ -108,7 +116,15 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
 9. **Qual o maior risco de colocar em produção?** Mudança de domínio (comida ≠ e-commerce),
    categorias ambíguas e saídas fora do esquema. Mitigação: validação de esquema na saída,
    decodificação restrita (`format` do Ollama) e monitorar a distribuição de categorias.
-10. **O que faria com mais tempo?** Revisar mais rótulos de treino, testar o 4B, calibrar limiares
+10. **A tabela mostra o 2B ajustado acima do 9B. Isso prova que ele é melhor?** Não, antes da
+    revisão. A referência provisória é o Gemini, e o 2B foi treinado para imitar o estilo dele
+    (quais categorias marcar juntas, onde passa a fronteira de `atendimento`). O 9B nunca viu
+    esse estilo. O IC da diferença exclui zero, mas ele só cobre o acaso da amostra, não esse viés.
+    A afirmação só vale com rótulos humanos, e mesmo aí a ancoragem puxa a favor do Gemini.
+11. **Por que o 2B ajustado ficou mais rápido que o 2B sem ajuste, se é o mesmo tamanho?**
+    Respostas mais curtas e diretas (menos tokens gerados); a velocidade por token é parecida
+    (`tokens_saida_medio` e `tokens_por_segundo` em `resultados/eficiencia.json`).
+12. **O que faria com mais tempo?** Revisar mais rótulos de treino, testar o 4B, calibrar limiares
     por categoria, medir com rótulos humanos cegos (sem sugestão) e testar em dados de delivery.
 
 ## 11. Pontos fracos (honestos)
@@ -119,5 +135,10 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
 - **Baseline do Gemini com o prompt curto não foi rodado** (500 chamadas = 25 dias de cota); a
   linha do Gemini usa os rótulos do prompt de rotulagem.
 - **Domínio:** e-commerce 2016-2018, não delivery de comida.
-- **Um só seed e uma só divisão:** sem intervalo de confiança por reamostragem do treino.
+- **Um só seed e uma só divisão:** o IC por bootstrap cobre a amostra de teste, mas não a
+  variação entre treinos (seria preciso treinar com vários seeds).
+- **Vantagem do 2B inflada até a revisão** (ver pergunta 10).
+- **Treino com 1.200 exemplos**, não 3.150: a cota do Gemini limitou a rotulagem.
+- **Latência do Gemini não medida:** a cota do dia acabou na rotulagem; a tabela de eficiência só
+  tem os modelos locais e o preço oficial do Gemini.
 - **Teste de 500:** categorias raras têm poucas dezenas de positivos; o F1 delas é instável.

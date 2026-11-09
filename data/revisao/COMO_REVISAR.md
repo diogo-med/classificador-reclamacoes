@@ -41,6 +41,30 @@ Regras gerais:
 - Sentimento pelo tom do texto, não pela nota (a nota aparece só como contexto).
 - O atraso real calculado pelas datas **não** aparece de propósito: ele é a checagem independente.
 
+## Fronteiras instáveis (regra para revisar de forma consistente)
+Estas regras servem só para a sua revisão ser consistente de uma linha para outra. Elas **não**
+mudam o prompt, os rótulos sugeridos nem o modelo. Na análise de erros
+(`resultados/analise_erros.md`), estas foram as fronteiras em que Gemini e modelo mais divergiram.
+
+**Quando marcar `atendimento`.** Marque se o texto relata uma **falha de contato ou de solução**
+que já aconteceu: não responderam, não resolveram, dificultaram troca/devolução/cancelamento,
+cancelaram sem motivo, entregador mal-educado. **Não** marque por um pedido de contato ou de
+providência sem queixa sobre isso.
+- "Faltaram 2 jogos de lençol. Aguardo contato." → `incompleto` (sem `atendimento`).
+- "Não recebi até hoje e ninguém me dá satisfação." → `nao_recebido;atendimento`.
+
+**`atraso` × `nao_recebido`.** Rotule pelo que o texto diz **no momento em que foi escrito**,
+não pelo que aconteceu depois (você não vê as datas).
+- Diz que **não chegou**: `nao_recebido`. Acrescente `atraso` só se também disser que o prazo
+  passou ("já passou do prazo e não chegou" → `atraso;nao_recebido`).
+- Diz que **chegou, mas demorou**: só `atraso` ("Quase um mês para entregar" → `atraso`).
+- Demora para **postar/despachar**, sem dizer que não chegou: `atraso`.
+- **Pedido que chegou depois de a avaliação ser escrita:** se o texto diz "ainda não recebi",
+  o rótulo é `nao_recebido` (mais `atraso` se citar o prazo), mesmo que você saiba ou suspeite
+  que ele chegou depois. No teste, a maior parte dos pedidos atrasados pelas datas foi avaliada
+  antes da entrega (`resultados/avaliacao_antes_da_entrega.json`); a checagem de atraso já
+  trata disso comparando também `atraso` **ou** `nao_recebido`.
+
 ## Viés de ancoragem
 Você revisa vendo o rótulo sugerido, o que tende a puxar para a concordância. Para reduzir:
 leia o texto e decida mentalmente **antes** de olhar as colunas sugeridas. O viés continua

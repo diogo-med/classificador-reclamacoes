@@ -1,0 +1,1012 @@
+{
+  "referencia": "provisoria_gemini",
+  "n_rotulados_por_split": {
+    "treino": 1200,
+    "teste": 500,
+    "validacao": 350
+  },
+  "modelos": {
+    "TF-IDF + regressão logística": {
+      "n": 500,
+      "sem_previsao": 0,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "categorias": {
+        "f1_macro": 0.683466794020791,
+        "f1_micro": 0.7502008032128514,
+        "acerto_exato": 0.646,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.6923076923076923,
+            "suporte": 50,
+            "matriz": {
+              "vp": 36,
+              "fp": 18,
+              "fn": 14,
+              "vn": 432
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.7715736040609137,
+            "suporte": 92,
+            "matriz": {
+              "vp": 76,
+              "fp": 29,
+              "fn": 16,
+              "vn": 379
+            }
+          },
+          "incompleto": {
+            "f1": 0.717948717948718,
+            "suporte": 40,
+            "matriz": {
+              "vp": 28,
+              "fp": 10,
+              "fn": 12,
+              "vn": 450
+            }
+          },
+          "produto_errado": {
+            "f1": 0.7142857142857143,
+            "suporte": 67,
+            "matriz": {
+              "vp": 45,
+              "fp": 14,
+              "fn": 22,
+              "vn": 419
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.6518518518518519,
+            "suporte": 66,
+            "matriz": {
+              "vp": 44,
+              "fp": 25,
+              "fn": 22,
+              "vn": 409
+            }
+          },
+          "atendimento": {
+            "f1": 0.6583850931677019,
+            "suporte": 76,
+            "matriz": {
+              "vp": 53,
+              "fp": 32,
+              "fn": 23,
+              "vn": 392
+            }
+          },
+          "elogio": {
+            "f1": 0.9326145552560647,
+            "suporte": 187,
+            "matriz": {
+              "vp": 173,
+              "fp": 11,
+              "fn": 14,
+              "vn": 302
+            }
+          },
+          "outro": {
+            "f1": 0.3287671232876712,
+            "suporte": 35,
+            "matriz": {
+              "vp": 12,
+              "fp": 26,
+              "fn": 23,
+              "vn": 439
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.874,
+        "f1_macro": 0.7655956015592061
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 86.18421052631578,
+          "kappa": 0.3615999999999999,
+          "cobertura_dos_atrasados_pct": 33.333333333333336,
+          "precisao_pct": 61.53846153846154,
+          "atrasados_reais": 72,
+          "marcados": 39,
+          "marcados_e_atrasados": 24
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 85.08771929824562,
+          "kappa": 0.5157421289355323,
+          "cobertura_dos_atrasados_pct": 72.22222222222223,
+          "precisao_pct": 52.0,
+          "atrasados_reais": 72,
+          "marcados": 100,
+          "marcados_e_atrasados": 52
+        }
+      },
+      "hiperparametros": {
+        "C": 10,
+        "f1_macro_validacao": 0.7244181791125208
+      }
+    },
+    "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+      "n": 500,
+      "sem_previsao": 0,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 98.0,
+      "categorias": {
+        "f1_macro": 0.5250591204891266,
+        "f1_micro": 0.6171593366979091,
+        "acerto_exato": 0.442,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.38247011952191234,
+            "suporte": 50,
+            "matriz": {
+              "vp": 48,
+              "fp": 153,
+              "fn": 2,
+              "vn": 297
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.7073170731707317,
+            "suporte": 92,
+            "matriz": {
+              "vp": 58,
+              "fp": 14,
+              "fn": 34,
+              "vn": 394
+            }
+          },
+          "incompleto": {
+            "f1": 0.3333333333333333,
+            "suporte": 40,
+            "matriz": {
+              "vp": 8,
+              "fp": 0,
+              "fn": 32,
+              "vn": 460
+            }
+          },
+          "produto_errado": {
+            "f1": 0.5887850467289719,
+            "suporte": 67,
+            "matriz": {
+              "vp": 63,
+              "fp": 84,
+              "fn": 4,
+              "vn": 349
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.7571428571428571,
+            "suporte": 66,
+            "matriz": {
+              "vp": 53,
+              "fp": 21,
+              "fn": 13,
+              "vn": 413
+            }
+          },
+          "atendimento": {
+            "f1": 0.2571428571428571,
+            "suporte": 76,
+            "matriz": {
+              "vp": 18,
+              "fp": 46,
+              "fn": 58,
+              "vn": 378
+            }
+          },
+          "elogio": {
+            "f1": 0.9015544041450777,
+            "suporte": 187,
+            "matriz": {
+              "vp": 174,
+              "fp": 25,
+              "fn": 13,
+              "vn": 288
+            }
+          },
+          "outro": {
+            "f1": 0.2727272727272727,
+            "suporte": 35,
+            "matriz": {
+              "vp": 6,
+              "fp": 3,
+              "fn": 29,
+              "vn": 462
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.896,
+        "f1_macro": 0.7449068737439143
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 70.6140350877193,
+          "kappa": 0.2779353374929098,
+          "cobertura_dos_atrasados_pct": 72.22222222222223,
+          "precisao_pct": 31.325301204819276,
+          "atrasados_reais": 72,
+          "marcados": 166,
+          "marcados_e_atrasados": 52
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 71.9298245614035,
+          "kappa": 0.33479212253829327,
+          "cobertura_dos_atrasados_pct": 83.33333333333333,
+          "precisao_pct": 34.09090909090909,
+          "atrasados_reais": 72,
+          "marcados": 176,
+          "marcados_e_atrasados": 60
+        }
+      },
+      "observacao": ""
+    },
+    "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+      "n": 500,
+      "sem_previsao": 0,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "categorias": {
+        "f1_macro": 0.7269568375712006,
+        "f1_micro": 0.7885360185902401,
+        "acerto_exato": 0.682,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.5662650602409639,
+            "suporte": 50,
+            "matriz": {
+              "vp": 47,
+              "fp": 69,
+              "fn": 3,
+              "vn": 381
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.8426966292134831,
+            "suporte": 92,
+            "matriz": {
+              "vp": 75,
+              "fp": 11,
+              "fn": 17,
+              "vn": 397
+            }
+          },
+          "incompleto": {
+            "f1": 0.7710843373493976,
+            "suporte": 40,
+            "matriz": {
+              "vp": 32,
+              "fp": 11,
+              "fn": 8,
+              "vn": 449
+            }
+          },
+          "produto_errado": {
+            "f1": 0.8551724137931035,
+            "suporte": 67,
+            "matriz": {
+              "vp": 62,
+              "fp": 16,
+              "fn": 5,
+              "vn": 417
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.848,
+            "suporte": 66,
+            "matriz": {
+              "vp": 53,
+              "fp": 6,
+              "fn": 13,
+              "vn": 428
+            }
+          },
+          "atendimento": {
+            "f1": 0.6474820143884892,
+            "suporte": 76,
+            "matriz": {
+              "vp": 45,
+              "fp": 18,
+              "fn": 31,
+              "vn": 406
+            }
+          },
+          "elogio": {
+            "f1": 0.9606299212598425,
+            "suporte": 187,
+            "matriz": {
+              "vp": 183,
+              "fp": 11,
+              "fn": 4,
+              "vn": 302
+            }
+          },
+          "outro": {
+            "f1": 0.32432432432432434,
+            "suporte": 35,
+            "matriz": {
+              "vp": 12,
+              "fp": 27,
+              "fn": 23,
+              "vn": 438
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.922,
+        "f1_macro": 0.8545247066752443
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 82.23684210526315,
+          "kappa": 0.38415366146458574,
+          "cobertura_dos_atrasados_pct": 54.166666666666664,
+          "precisao_pct": 44.827586206896555,
+          "atrasados_reais": 72,
+          "marcados": 87,
+          "marcados_e_atrasados": 39
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 84.4298245614035,
+          "kappa": 0.5413124787487249,
+          "cobertura_dos_atrasados_pct": 84.72222222222223,
+          "precisao_pct": 50.413223140495866,
+          "atrasados_reais": 72,
+          "marcados": 121,
+          "marcados_e_atrasados": 61
+        }
+      },
+      "observacao": ""
+    },
+    "Qwen3.5-2B + LoRA (este projeto)": {
+      "n": 500,
+      "sem_previsao": 0,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "categorias": {
+        "f1_macro": 0.803416290267899,
+        "f1_micro": 0.8559533721898418,
+        "acerto_exato": 0.782,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.8113207547169812,
+            "suporte": 50,
+            "matriz": {
+              "vp": 43,
+              "fp": 13,
+              "fn": 7,
+              "vn": 437
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.8936170212765957,
+            "suporte": 92,
+            "matriz": {
+              "vp": 84,
+              "fp": 12,
+              "fn": 8,
+              "vn": 396
+            }
+          },
+          "incompleto": {
+            "f1": 0.8157894736842105,
+            "suporte": 40,
+            "matriz": {
+              "vp": 31,
+              "fp": 5,
+              "fn": 9,
+              "vn": 455
+            }
+          },
+          "produto_errado": {
+            "f1": 0.8548387096774194,
+            "suporte": 67,
+            "matriz": {
+              "vp": 53,
+              "fp": 4,
+              "fn": 14,
+              "vn": 429
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.8503937007874016,
+            "suporte": 66,
+            "matriz": {
+              "vp": 54,
+              "fp": 7,
+              "fn": 12,
+              "vn": 427
+            }
+          },
+          "atendimento": {
+            "f1": 0.7407407407407407,
+            "suporte": 76,
+            "matriz": {
+              "vp": 50,
+              "fp": 9,
+              "fn": 26,
+              "vn": 415
+            }
+          },
+          "elogio": {
+            "f1": 0.9606299212598425,
+            "suporte": 187,
+            "matriz": {
+              "vp": 183,
+              "fp": 11,
+              "fn": 4,
+              "vn": 302
+            }
+          },
+          "outro": {
+            "f1": 0.5,
+            "suporte": 35,
+            "matriz": {
+              "vp": 16,
+              "fp": 13,
+              "fn": 19,
+              "vn": 452
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.912,
+        "f1_macro": 0.8026615407854484
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 87.5,
+          "kappa": 0.43029984218832196,
+          "cobertura_dos_atrasados_pct": 38.888888888888886,
+          "precisao_pct": 68.29268292682927,
+          "atrasados_reais": 72,
+          "marcados": 41,
+          "marcados_e_atrasados": 28
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 91.22807017543859,
+          "kappa": 0.6910569105691058,
+          "cobertura_dos_atrasados_pct": 80.55555555555556,
+          "precisao_pct": 69.04761904761905,
+          "atrasados_reais": 72,
+          "marcados": 84,
+          "marcados_e_atrasados": 58
+        }
+      },
+      "observacao": ""
+    },
+    "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+      "n": 500,
+      "sem_previsao": 0,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "categorias": {
+        "f1_macro": 0.8083468293762677,
+        "f1_micro": 0.8592839300582847,
+        "acerto_exato": 0.786,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.819047619047619,
+            "suporte": 50,
+            "matriz": {
+              "vp": 43,
+              "fp": 12,
+              "fn": 7,
+              "vn": 438
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.8983957219251337,
+            "suporte": 92,
+            "matriz": {
+              "vp": 84,
+              "fp": 11,
+              "fn": 8,
+              "vn": 397
+            }
+          },
+          "incompleto": {
+            "f1": 0.8157894736842105,
+            "suporte": 40,
+            "matriz": {
+              "vp": 31,
+              "fp": 5,
+              "fn": 9,
+              "vn": 455
+            }
+          },
+          "produto_errado": {
+            "f1": 0.8548387096774194,
+            "suporte": 67,
+            "matriz": {
+              "vp": 53,
+              "fp": 4,
+              "fn": 14,
+              "vn": 429
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.8503937007874016,
+            "suporte": 66,
+            "matriz": {
+              "vp": 54,
+              "fp": 7,
+              "fn": 12,
+              "vn": 427
+            }
+          },
+          "atendimento": {
+            "f1": 0.75,
+            "suporte": 76,
+            "matriz": {
+              "vp": 51,
+              "fp": 9,
+              "fn": 25,
+              "vn": 415
+            }
+          },
+          "elogio": {
+            "f1": 0.9631578947368421,
+            "suporte": 187,
+            "matriz": {
+              "vp": 183,
+              "fp": 10,
+              "fn": 4,
+              "vn": 303
+            }
+          },
+          "outro": {
+            "f1": 0.5151515151515151,
+            "suporte": 35,
+            "matriz": {
+              "vp": 17,
+              "fp": 14,
+              "fn": 18,
+              "vn": 451
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.912,
+        "f1_macro": 0.7971428856982946
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 87.28070175438597,
+          "kappa": 0.41631355932203395,
+          "cobertura_dos_atrasados_pct": 37.5,
+          "precisao_pct": 67.5,
+          "atrasados_reais": 72,
+          "marcados": 40,
+          "marcados_e_atrasados": 27
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 91.00877192982456,
+          "kappa": 0.681651001225991,
+          "cobertura_dos_atrasados_pct": 79.16666666666667,
+          "precisao_pct": 68.67469879518072,
+          "atrasados_reais": 72,
+          "marcados": 83,
+          "marcados_e_atrasados": 57
+        }
+      },
+      "observacao": ""
+    },
+    "Gemini (prompt de rotulagem, lotes de 100) vs. humano": {
+      "pendente_de_revisao": true
+    }
+  },
+  "bootstrap_f1_macro": {
+    "n": 500,
+    "n_reamostras": 1000,
+    "seed": 42,
+    "metodo": "percentil, pareado",
+    "modelos": {
+      "TF-IDF + regressão logística": {
+        "f1_macro": 0.683466794020791,
+        "ic95": [
+          0.6452340005705267,
+          0.719191861260179
+        ]
+      },
+      "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+        "f1_macro": 0.5250591204891266,
+        "ic95": [
+          0.483065645819762,
+          0.5627063257789761
+        ]
+      },
+      "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+        "f1_macro": 0.7269568375712006,
+        "ic95": [
+          0.6889143536871799,
+          0.760702056111365
+        ]
+      },
+      "Qwen3.5-2B + LoRA (este projeto)": {
+        "f1_macro": 0.803416290267899,
+        "ic95": [
+          0.7688071665970079,
+          0.8380705733891292
+        ]
+      },
+      "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+        "f1_macro": 0.8083468293762677,
+        "ic95": [
+          0.7755346298468775,
+          0.8411449668305907
+        ]
+      }
+    },
+    "diferencas": {
+      "Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+        "diferenca_f1_macro": 0.0764594526966984,
+        "ic95": [
+          0.04185214966409096,
+          0.11328026235744376
+        ],
+        "fracao_reamostras_a_maior": 1.0
+      },
+      "Qwen3.5-2B + LoRA (este projeto) − TF-IDF + regressão logística": {
+        "diferenca_f1_macro": 0.11994949624710793,
+        "ic95": [
+          0.0871911089745639,
+          0.15812257882964362
+        ],
+        "fracao_reamostras_a_maior": 1.0
+      }
+    },
+    "referencia": "provisoria_gemini"
+  },
+  "checagem_atraso": {
+    "Gemini (rótulos)": {
+      "todas": {
+        "n": 1881,
+        "taxa_atraso_real": 0.15629984051036683,
+        "atraso": {
+          "concordancia_pct": 87.98511430090377,
+          "kappa": 0.46075804855772884,
+          "cobertura_dos_atrasados_pct": 42.51700680272109,
+          "precisao_pct": 68.68131868131869,
+          "atrasados_reais": 294,
+          "marcados": 182,
+          "marcados_e_atrasados": 125
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 90.53694843168527,
+          "kappa": 0.6661761274923279,
+          "cobertura_dos_atrasados_pct": 78.91156462585035,
+          "precisao_pct": 66.66666666666667,
+          "atrasados_reais": 294,
+          "marcados": 348,
+          "marcados_e_atrasados": 232
+        }
+      },
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 86.40350877192982,
+          "kappa": 0.36734693877551017,
+          "cobertura_dos_atrasados_pct": 33.333333333333336,
+          "precisao_pct": 63.1578947368421,
+          "atrasados_reais": 72,
+          "marcados": 38,
+          "marcados_e_atrasados": 24
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 90.35087719298247,
+          "kappa": 0.663716814159292,
+          "cobertura_dos_atrasados_pct": 79.16666666666667,
+          "precisao_pct": 66.27906976744185,
+          "atrasados_reais": 72,
+          "marcados": 86,
+          "marcados_e_atrasados": 57
+        }
+      }
+    },
+    "Qwen3.5-9B (rótulos)": {
+      "todas": {
+        "n": 1372,
+        "taxa_atraso_real": 0.16253644314868804,
+        "atraso": {
+          "concordancia_pct": 86.15160349854227,
+          "kappa": 0.45591691399613454,
+          "cobertura_dos_atrasados_pct": 49.327354260089685,
+          "precisao_pct": 58.8235294117647,
+          "atrasados_reais": 223,
+          "marcados": 187,
+          "marcados_e_atrasados": 110
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 87.90087463556851,
+          "kappa": 0.6029220496190526,
+          "cobertura_dos_atrasados_pct": 77.57847533632287,
+          "precisao_pct": 59.86159169550173,
+          "atrasados_reais": 223,
+          "marcados": 289,
+          "marcados_e_atrasados": 173
+        }
+      },
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 85.96491228070175,
+          "kappa": 0.44066237350505977,
+          "cobertura_dos_atrasados_pct": 48.611111111111114,
+          "precisao_pct": 56.45161290322581,
+          "atrasados_reais": 72,
+          "marcados": 62,
+          "marcados_e_atrasados": 35
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 89.25438596491229,
+          "kappa": 0.6387272021730694,
+          "cobertura_dos_atrasados_pct": 80.55555555555556,
+          "precisao_pct": 62.365591397849464,
+          "atrasados_reais": 72,
+          "marcados": 93,
+          "marcados_e_atrasados": 58
+        }
+      }
+    },
+    "TF-IDF + regressão logística": {
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 86.18421052631578,
+          "kappa": 0.3615999999999999,
+          "cobertura_dos_atrasados_pct": 33.333333333333336,
+          "precisao_pct": 61.53846153846154,
+          "atrasados_reais": 72,
+          "marcados": 39,
+          "marcados_e_atrasados": 24
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 85.08771929824562,
+          "kappa": 0.5157421289355323,
+          "cobertura_dos_atrasados_pct": 72.22222222222223,
+          "precisao_pct": 52.0,
+          "atrasados_reais": 72,
+          "marcados": 100,
+          "marcados_e_atrasados": 52
+        }
+      }
+    },
+    "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 70.6140350877193,
+          "kappa": 0.2779353374929098,
+          "cobertura_dos_atrasados_pct": 72.22222222222223,
+          "precisao_pct": 31.325301204819276,
+          "atrasados_reais": 72,
+          "marcados": 166,
+          "marcados_e_atrasados": 52
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 71.9298245614035,
+          "kappa": 0.33479212253829327,
+          "cobertura_dos_atrasados_pct": 83.33333333333333,
+          "precisao_pct": 34.09090909090909,
+          "atrasados_reais": 72,
+          "marcados": 176,
+          "marcados_e_atrasados": 60
+        }
+      }
+    },
+    "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 82.23684210526315,
+          "kappa": 0.38415366146458574,
+          "cobertura_dos_atrasados_pct": 54.166666666666664,
+          "precisao_pct": 44.827586206896555,
+          "atrasados_reais": 72,
+          "marcados": 87,
+          "marcados_e_atrasados": 39
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 84.4298245614035,
+          "kappa": 0.5413124787487249,
+          "cobertura_dos_atrasados_pct": 84.72222222222223,
+          "precisao_pct": 50.413223140495866,
+          "atrasados_reais": 72,
+          "marcados": 121,
+          "marcados_e_atrasados": 61
+        }
+      }
+    },
+    "Qwen3.5-2B + LoRA (este projeto)": {
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 87.5,
+          "kappa": 0.43029984218832196,
+          "cobertura_dos_atrasados_pct": 38.888888888888886,
+          "precisao_pct": 68.29268292682927,
+          "atrasados_reais": 72,
+          "marcados": 41,
+          "marcados_e_atrasados": 28
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 91.22807017543859,
+          "kappa": 0.6910569105691058,
+          "cobertura_dos_atrasados_pct": 80.55555555555556,
+          "precisao_pct": 69.04761904761905,
+          "atrasados_reais": 72,
+          "marcados": 84,
+          "marcados_e_atrasados": 58
+        }
+      }
+    },
+    "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+      "teste": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 87.28070175438597,
+          "kappa": 0.41631355932203395,
+          "cobertura_dos_atrasados_pct": 37.5,
+          "precisao_pct": 67.5,
+          "atrasados_reais": 72,
+          "marcados": 40,
+          "marcados_e_atrasados": 27
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 91.00877192982456,
+          "kappa": 0.681651001225991,
+          "cobertura_dos_atrasados_pct": 79.16666666666667,
+          "precisao_pct": 68.67469879518072,
+          "atrasados_reais": 72,
+          "marcados": 83,
+          "marcados_e_atrasados": 57
+        }
+      }
+    }
+  },
+  "concordancia_gemini_9b": {
+    "teste": {
+      "n": 499,
+      "sentimento": {
+        "concordancia_pct": 93.9879759519038,
+        "kappa": 0.8964214546662238
+      },
+      "categorias": {
+        "atraso": {
+          "concordancia_pct": 92.38476953907816,
+          "kappa": 0.6800418466522677,
+          "freq_a": 50,
+          "freq_b": 86
+        },
+        "nao_recebido": {
+          "concordancia_pct": 96.59318637274549,
+          "kappa": 0.8872046485034638,
+          "freq_a": 91,
+          "freq_b": 94
+        },
+        "incompleto": {
+          "concordancia_pct": 98.79759519038076,
+          "kappa": 0.9145645474260929,
+          "freq_a": 40,
+          "freq_b": 36
+        },
+        "produto_errado": {
+          "concordancia_pct": 97.79559118236473,
+          "kappa": 0.9008006072325737,
+          "freq_a": 67,
+          "freq_b": 60
+        },
+        "defeito_qualidade": {
+          "concordancia_pct": 95.79158316633266,
+          "kappa": 0.8178293899831371,
+          "freq_a": 66,
+          "freq_b": 67
+        },
+        "atendimento": {
+          "concordancia_pct": 92.38476953907816,
+          "kappa": 0.6952132960426913,
+          "freq_a": 76,
+          "freq_b": 70
+        },
+        "elogio": {
+          "concordancia_pct": 98.59719438877755,
+          "kappa": 0.9700975062707061,
+          "freq_a": 187,
+          "freq_b": 188
+        },
+        "outro": {
+          "concordancia_pct": 93.9879759519038,
+          "kappa": 0.4994315521968836,
+          "freq_a": 35,
+          "freq_b": 29
+        }
+      },
+      "kappa_medio_categorias": 0.7956479242884771,
+      "conjunto_identico_pct": 78.95791583166333
+    },
+    "treino": {
+      "n": 378,
+      "sentimento": {
+        "concordancia_pct": 93.91534391534393,
+        "kappa": 0.8942412962557478
+      },
+      "categorias": {
+        "atraso": {
+          "concordancia_pct": 95.23809523809523,
+          "kappa": 0.8062642369020501,
+          "freq_a": 46,
+          "freq_b": 62
+        },
+        "nao_recebido": {
+          "concordancia_pct": 97.88359788359789,
+          "kappa": 0.9228295819935691,
+          "freq_a": 63,
+          "freq_b": 61
+        },
+        "incompleto": {
+          "concordancia_pct": 97.35449735449735,
+          "kappa": 0.8714023270055113,
+          "freq_a": 43,
+          "freq_b": 45
+        },
+        "produto_errado": {
+          "concordancia_pct": 96.56084656084656,
+          "kappa": 0.8029829203752706,
+          "freq_a": 39,
+          "freq_b": 34
+        },
+        "defeito_qualidade": {
+          "concordancia_pct": 97.08994708994709,
+          "kappa": 0.8763750966284117,
+          "freq_a": 53,
+          "freq_b": 50
+        },
+        "atendimento": {
+          "concordancia_pct": 93.65079365079364,
+          "kappa": 0.7523071042428876,
+          "freq_a": 61,
+          "freq_b": 53
+        },
+        "elogio": {
+          "concordancia_pct": 97.88359788359789,
+          "kappa": 0.9539094650205762,
+          "freq_a": 135,
+          "freq_b": 135
+        },
+        "outro": {
+          "concordancia_pct": 93.65079365079364,
+          "kappa": 0.6016160196732829,
+          "freq_a": 34,
+          "freq_b": 32
+        }
+      },
+      "kappa_medio_categorias": 0.8234608439801949,
+      "conjunto_identico_pct": 79.36507936507937
+    }
+  }
+}

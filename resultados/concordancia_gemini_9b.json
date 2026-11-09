@@ -1,0 +1,120 @@
+{
+  "teste": {
+    "n": 499,
+    "sentimento": {
+      "concordancia_pct": 93.9879759519038,
+      "kappa": 0.8964214546662238
+    },
+    "categorias": {
+      "atraso": {
+        "concordancia_pct": 92.38476953907816,
+        "kappa": 0.6800418466522677,
+        "freq_a": 50,
+        "freq_b": 86
+      },
+      "nao_recebido": {
+        "concordancia_pct": 96.59318637274549,
+        "kappa": 0.8872046485034638,
+        "freq_a": 91,
+        "freq_b": 94
+      },
+      "incompleto": {
+        "concordancia_pct": 98.79759519038076,
+        "kappa": 0.9145645474260929,
+        "freq_a": 40,
+        "freq_b": 36
+      },
+      "produto_errado": {
+        "concordancia_pct": 97.79559118236473,
+        "kappa": 0.9008006072325737,
+        "freq_a": 67,
+        "freq_b": 60
+      },
+      "defeito_qualidade": {
+        "concordancia_pct": 95.79158316633266,
+        "kappa": 0.8178293899831371,
+        "freq_a": 66,
+        "freq_b": 67
+      },
+      "atendimento": {
+        "concordancia_pct": 92.38476953907816,
+        "kappa": 0.6952132960426913,
+        "freq_a": 76,
+        "freq_b": 70
+      },
+      "elogio": {
+        "concordancia_pct": 98.59719438877755,
+        "kappa": 0.9700975062707061,
+        "freq_a": 187,
+        "freq_b": 188
+      },
+      "outro": {
+        "concordancia_pct": 93.9879759519038,
+        "kappa": 0.4994315521968836,
+        "freq_a": 35,
+        "freq_b": 29
+      }
+    },
+    "kappa_medio_categorias": 0.7956479242884771,
+    "conjunto_identico_pct": 78.95791583166333
+  },
+  "treino": {
+    "n": 378,
+    "sentimento": {
+      "concordancia_pct": 93.91534391534393,
+      "kappa": 0.8942412962557478
+    },
+    "categorias": {
+      "atraso": {
+        "concordancia_pct": 95.23809523809523,
+        "kappa": 0.8062642369020501,
+        "freq_a": 46,
+        "freq_b": 62
+      },
+      "nao_recebido": {
+        "concordancia_pct": 97.88359788359789,
+        "kappa": 0.9228295819935691,
+        "freq_a": 63,
+        "freq_b": 61
+      },
+      "incompleto": {
+        "concordancia_pct": 97.35449735449735,
+        "kappa": 0.8714023270055113,
+        "freq_a": 43,
+        "freq_b": 45
+      },
+      "produto_errado": {
+        "concordancia_pct": 96.56084656084656,
+        "kappa": 0.8029829203752706,
+        "freq_a": 39,
+        "freq_b": 34
+      },
+      "defeito_qualidade": {
+        "concordancia_pct": 97.08994708994709,
+        "kappa": 0.8763750966284117,
+        "freq_a": 53,
+        "freq_b": 50
+      },
+      "atendimento": {
+        "concordancia_pct": 93.65079365079364,
+        "kappa": 0.7523071042428876,
+        "freq_a": 61,
+        "freq_b": 53
+      },
+      "elogio": {
+        "concordancia_pct": 97.88359788359789,
+        "kappa": 0.9539094650205762,
+        "freq_a": 135,
+        "freq_b": 135
+      },
+      "outro": {
+        "concordancia_pct": 93.65079365079364,
+        "kappa": 0.6016160196732829,
+        "freq_a": 34,
+        "freq_b": 32
+      }
+    },
+    "kappa_medio_categorias": 0.8234608439801949,
+    "conjunto_identico_pct": 79.36507936507937
+  }
+}

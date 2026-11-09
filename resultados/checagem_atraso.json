@@ -1,0 +1,214 @@
+{
+  "Gemini (rótulos)": {
+    "todas": {
+      "n": 1881,
+      "taxa_atraso_real": 0.15629984051036683,
+      "atraso": {
+        "concordancia_pct": 87.98511430090377,
+        "kappa": 0.46075804855772884,
+        "cobertura_dos_atrasados_pct": 42.51700680272109,
+        "precisao_pct": 68.68131868131869,
+        "atrasados_reais": 294,
+        "marcados": 182,
+        "marcados_e_atrasados": 125
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 90.53694843168527,
+        "kappa": 0.6661761274923279,
+        "cobertura_dos_atrasados_pct": 78.91156462585035,
+        "precisao_pct": 66.66666666666667,
+        "atrasados_reais": 294,
+        "marcados": 348,
+        "marcados_e_atrasados": 232
+      }
+    },
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 86.40350877192982,
+        "kappa": 0.36734693877551017,
+        "cobertura_dos_atrasados_pct": 33.333333333333336,
+        "precisao_pct": 63.1578947368421,
+        "atrasados_reais": 72,
+        "marcados": 38,
+        "marcados_e_atrasados": 24
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 90.35087719298247,
+        "kappa": 0.663716814159292,
+        "cobertura_dos_atrasados_pct": 79.16666666666667,
+        "precisao_pct": 66.27906976744185,
+        "atrasados_reais": 72,
+        "marcados": 86,
+        "marcados_e_atrasados": 57
+      }
+    }
+  },
+  "Qwen3.5-9B (rótulos)": {
+    "todas": {
+      "n": 1372,
+      "taxa_atraso_real": 0.16253644314868804,
+      "atraso": {
+        "concordancia_pct": 86.15160349854227,
+        "kappa": 0.45591691399613454,
+        "cobertura_dos_atrasados_pct": 49.327354260089685,
+        "precisao_pct": 58.8235294117647,
+        "atrasados_reais": 223,
+        "marcados": 187,
+        "marcados_e_atrasados": 110
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 87.90087463556851,
+        "kappa": 0.6029220496190526,
+        "cobertura_dos_atrasados_pct": 77.57847533632287,
+        "precisao_pct": 59.86159169550173,
+        "atrasados_reais": 223,
+        "marcados": 289,
+        "marcados_e_atrasados": 173
+      }
+    },
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 85.96491228070175,
+        "kappa": 0.44066237350505977,
+        "cobertura_dos_atrasados_pct": 48.611111111111114,
+        "precisao_pct": 56.45161290322581,
+        "atrasados_reais": 72,
+        "marcados": 62,
+        "marcados_e_atrasados": 35
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 89.25438596491229,
+        "kappa": 0.6387272021730694,
+        "cobertura_dos_atrasados_pct": 80.55555555555556,
+        "precisao_pct": 62.365591397849464,
+        "atrasados_reais": 72,
+        "marcados": 93,
+        "marcados_e_atrasados": 58
+      }
+    }
+  },
+  "TF-IDF + regressão logística": {
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 86.18421052631578,
+        "kappa": 0.3615999999999999,
+        "cobertura_dos_atrasados_pct": 33.333333333333336,
+        "precisao_pct": 61.53846153846154,
+        "atrasados_reais": 72,
+        "marcados": 39,
+        "marcados_e_atrasados": 24
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 85.08771929824562,
+        "kappa": 0.5157421289355323,
+        "cobertura_dos_atrasados_pct": 72.22222222222223,
+        "precisao_pct": 52.0,
+        "atrasados_reais": 72,
+        "marcados": 100,
+        "marcados_e_atrasados": 52
+      }
+    }
+  },
+  "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 70.6140350877193,
+        "kappa": 0.2779353374929098,
+        "cobertura_dos_atrasados_pct": 72.22222222222223,
+        "precisao_pct": 31.325301204819276,
+        "atrasados_reais": 72,
+        "marcados": 166,
+        "marcados_e_atrasados": 52
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 71.9298245614035,
+        "kappa": 0.33479212253829327,
+        "cobertura_dos_atrasados_pct": 83.33333333333333,
+        "precisao_pct": 34.09090909090909,
+        "atrasados_reais": 72,
+        "marcados": 176,
+        "marcados_e_atrasados": 60
+      }
+    }
+  },
+  "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 82.23684210526315,
+        "kappa": 0.38415366146458574,
+        "cobertura_dos_atrasados_pct": 54.166666666666664,
+        "precisao_pct": 44.827586206896555,
+        "atrasados_reais": 72,
+        "marcados": 87,
+        "marcados_e_atrasados": 39
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 84.4298245614035,
+        "kappa": 0.5413124787487249,
+        "cobertura_dos_atrasados_pct": 84.72222222222223,
+        "precisao_pct": 50.413223140495866,
+        "atrasados_reais": 72,
+        "marcados": 121,
+        "marcados_e_atrasados": 61
+      }
+    }
+  },
+  "Qwen3.5-2B + LoRA (este projeto)": {
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 87.5,
+        "kappa": 0.43029984218832196,
+        "cobertura_dos_atrasados_pct": 38.888888888888886,
+        "precisao_pct": 68.29268292682927,
+        "atrasados_reais": 72,
+        "marcados": 41,
+        "marcados_e_atrasados": 28
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 91.22807017543859,
+        "kappa": 0.6910569105691058,
+        "cobertura_dos_atrasados_pct": 80.55555555555556,
+        "precisao_pct": 69.04761904761905,
+        "atrasados_reais": 72,
+        "marcados": 84,
+        "marcados_e_atrasados": 58
+      }
+    }
+  },
+  "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+    "teste": {
+      "n": 456,
+      "taxa_atraso_real": 0.15789473684210525,
+      "atraso": {
+        "concordancia_pct": 87.28070175438597,
+        "kappa": 0.41631355932203395,
+        "cobertura_dos_atrasados_pct": 37.5,
+        "precisao_pct": 67.5,
+        "atrasados_reais": 72,
+        "marcados": 40,
+        "marcados_e_atrasados": 27
+      },
+      "atraso_ou_nao_recebido": {
+        "concordancia_pct": 91.00877192982456,
+        "kappa": 0.681651001225991,
+        "cobertura_dos_atrasados_pct": 79.16666666666667,
+        "precisao_pct": 68.67469879518072,
+        "atrasados_reais": 72,
+        "marcados": 83,
+        "marcados_e_atrasados": 57
+      }
+    }
+  }
+}

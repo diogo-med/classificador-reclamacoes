@@ -16,6 +16,15 @@ grande (Gemini) um modelo de 2B ajustado retém, e a que custo e latência?
 a imitá-lo. Num teste rotulado pelo próprio Gemini, o aluno não tem como superar o professor; por
 isso a medida final depende da revisão humana.
 
+**Leitura dos resultados antes da revisão: a vantagem do 2B ajustado está inflada.** O 2B
+ajustado foi treinado para imitar o estilo de rotulagem do Gemini (quais categorias marcar
+juntas, onde fica a fronteira de `atendimento`, `outro` etc.), e as tabelas abaixo medem a
+concordância com o mesmo Gemini. O Qwen3.5-9B e o 2B sem ajuste não viram esse estilo, e o
+TF-IDF viu os mesmos rótulos com muito menos capacidade. Por isso a diferença a favor do 2B
+ajustado mistura qualidade com semelhança de estilo. **Este README não afirma que o 2B ajustado
+supera o 9B ou o TF-IDF**; essa comparação só vale depois de `python src/recalcular.py` rodar com
+os rótulos revisados por humano, quando as tabelas e os intervalos de confiança são refeitos.
+
 ```json
 {"sentimento": "negativo", "categorias": ["incompleto", "atendimento"], "resumo": "Faltou um item e a loja não responde."}
 ```
@@ -27,26 +36,88 @@ Todos os números abaixo são gerados por `python src/avaliar.py` a partir de ar
 
 ### Qualidade (teste)
 <!-- INICIO:qualidade -->
+Teste: 500 avaliações; referência: rótulos **provisórios** do Gemini (revisão humana pendente).
+
+| Modelo | F1 macro | F1 macro IC 95% | F1 micro | F1 `atraso` | Acerto exato | Sentimento (acc / F1 macro) | JSON válido (%) | JSON no esquema (%) | Atraso real: cobertura (%) |
+|---|---|---|---|---|---|---|---|---|---|
+| TF-IDF + regressão logística | 0.683 | [0.645, 0.719] | 0.750 | 0.692 | 0.646 | 0.874 / 0.766 | 100.0 | 100.0 | 33.3 |
+| Qwen3.5-2B sem ajuste (Ollama q8_0) | 0.525 | [0.483, 0.563] | 0.617 | 0.382 | 0.442 | 0.896 / 0.745 | 100.0 | 98.0 | 72.2 |
+| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | 0.727 | [0.689, 0.761] | 0.789 | 0.566 | 0.682 | 0.922 / 0.855 | 100.0 | 100.0 | 54.2 |
+| Qwen3.5-2B + LoRA (este projeto) | 0.803 | [0.769, 0.838] | 0.856 | 0.811 | 0.782 | 0.912 / 0.803 | 100.0 | 100.0 | 38.9 |
+| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | 0.808 | [0.776, 0.841] | 0.859 | 0.819 | 0.786 | 0.912 / 0.797 | 100.0 | 100.0 | 37.5 |
+| Gemini (prompt de rotulagem, lotes de 100) vs. humano | pendente de revisão | — | — | — | — | — | — | — | — | — |
+
+Diferenças de F1 macro com IC de 95% (bootstrap pareado, 1000 reamostragens do teste com reposição, seed 42, percentis 2,5 e 97,5):
+
+- Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B sem ajuste (Ollama Q4_K_M): +0.076 [+0.042, +0.113]; primeiro maior em 100.0% das reamostragens
+- Qwen3.5-2B + LoRA (este projeto) − TF-IDF + regressão logística: +0.120 [+0.087, +0.158]; primeiro maior em 100.0% das reamostragens
+
+O intervalo cobre só a variação por amostragem das 500 avaliações do teste; não cobre erros dos rótulos de referência nem a variação entre treinos (um só seed).
+
+**Enquanto a referência for o Gemini, a vantagem do 2B ajustado está inflada**: ele foi treinado para imitar o estilo de rotulagem do Gemini, e esta tabela mede concordância com o Gemini. O 9B e o TF-IDF não tiveram esse benefício na mesma medida (o TF-IDF também foi treinado com rótulos do Gemini, mas com muito menos capacidade). Esta tabela **não** mostra que o 2B ajustado supera o 9B; isso só pode ser afirmado depois de `src/recalcular.py` rodar com os rótulos revisados por humano.
+
+A linha **Gemini (prompt de rotulagem, lotes de 100) vs. humano** fica pendente: antes da revisão, os rótulos de referência são os do próprio Gemini, e compará-los com eles mesmos daria F1 = 1,0 por definição. Ela é preenchida por `python src/recalcular.py` depois da revisão humana.
+
+Rótulos do Gemini no teste: 28 em lotes de 25, 472 em lotes de 100 (ver DECISOES.md D19).
 <!-- FIM:qualidade -->
 
 ### F1 por categoria (teste)
 <!-- INICIO:f1_categorias -->
+| Modelo | `atraso` | `nao_recebido` | `incompleto` | `produto_errado` | `defeito_qualidade` | `atendimento` | `elogio` | `outro` |
+|---|---|---|---|---|---|---|---|---|
+| TF-IDF + regressão logística | 0.69 | 0.77 | 0.72 | 0.71 | 0.65 | 0.66 | 0.93 | 0.33 |
+| Qwen3.5-2B sem ajuste (Ollama q8_0) | 0.38 | 0.71 | 0.33 | 0.59 | 0.76 | 0.26 | 0.90 | 0.27 |
+| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | 0.57 | 0.84 | 0.77 | 0.86 | 0.85 | 0.65 | 0.96 | 0.32 |
+| Qwen3.5-2B + LoRA (este projeto) | 0.81 | 0.89 | 0.82 | 0.85 | 0.85 | 0.74 | 0.96 | 0.50 |
+| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | 0.82 | 0.90 | 0.82 | 0.85 | 0.85 | 0.75 | 0.96 | 0.52 |
+| *suporte no teste* | 50 | 92 | 40 | 67 | 66 | 76 | 187 | 35 |
 <!-- FIM:f1_categorias -->
 
 ### Eficiência (mesma CPU, 100 avaliações fixas do teste)
 <!-- INICIO:eficiencia -->
+Hardware local: 12th Gen Intel(R) Core(TM) i5-1235U, 12 CPUs lógicas, 15Gi de RAM, sem GPU dedicada (só CPU).
+
+| Modelo | Onde | n | Latência média (s) | Latência p95 (s) | Tokens/s (geração) | JSON válido (%) | Custo por 1.000 avaliações |
+|---|---|---|---|---|---|---|---|
+| Qwen3.5-2B sem ajuste (q8_0) | Ollama local (CPU) | 100 | 7.21 | 10.02 | 10.9 | 100.0 | US$ 0 de API (hardware próprio) |
+| Qwen3.5-9B sem ajuste (Q4_K_M) | Ollama local (CPU) | 100 | 26.14 | 36.37 | 3.4 | 100.0 | US$ 0 de API (hardware próprio) |
+| Qwen3.5-2B + LoRA (q8_0) | Ollama local (CPU) | 100 | 5.96 | 7.27 | 11.2 | 100.0 | US$ 0 de API (hardware próprio) |
+
+- Mesma amostra fixa de 100 avaliações do teste para os modelos locais (`resultados/ids_eficiencia.txt`), uma chamada por avaliação, sem paralelismo, temperatura 0, raciocínio desligado, num_ctx 2048, 1 chamada de aquecimento descartada.
+- Latência = tempo de parede da requisição HTTP ao Ollama local (inclui processar o prompt e gerar a resposta).
+- Modelos locais: custo marginal de API = 0; o custo real é o hardware/energia, que não estimamos.
+- Preço gemini-3.6-flash: US$ 0.75/1M tokens de entrada e US$ 3.75/1M de saída (https://aistudio.google.com/docs/pricing (redirecionado de ai.google.dev/gemini-api/docs/pricing), nível pago Standard, texto, consultado em 2026-11-08). Preço promocional válido até 31/12/2026; a partir de 01/01/2027 passa a US$ 1,50 (entrada) e US$ 7,50 (saída). A saída inclui tokens de raciocínio. Batch API: metade do preço. O nível gratuito não cobra, mas é limitado a 20 requisições/dia.
 <!-- FIM:eficiencia -->
 
 ### Concordância Gemini × Qwen3.5-9B (ambiguidade das categorias)
 Os dois rotuladores recebem o mesmo prompt de rotulagem. A concordância mede quão ambígua é cada
 categoria, não quem está certo.
 <!-- INICIO:concordancia -->
+| Recorte | n | Sentimento (% / κ) | `atraso` (% / κ) | `nao_recebido` (% / κ) | `incompleto` (% / κ) | `produto_errado` (% / κ) | `defeito_qualidade` (% / κ) | `atendimento` (% / κ) | `elogio` (% / κ) | `outro` (% / κ) | Conjunto idêntico (%) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| teste | 499 | 94 / 0.90 | 92 / 0.68 | 97 / 0.89 | 99 / 0.91 | 98 / 0.90 | 96 / 0.82 | 92 / 0.70 | 99 / 0.97 | 94 / 0.50 | 79.0 |
+| treino | 378 | 94 / 0.89 | 95 / 0.81 | 98 / 0.92 | 97 / 0.87 | 97 / 0.80 | 97 / 0.88 | 94 / 0.75 | 98 / 0.95 | 94 / 0.60 | 79.4 |
 <!-- FIM:concordancia -->
 
 ### Checagem independente: rótulo `atraso` × atraso real pelas datas
 `atraso_real` = entrega depois da data estimada, calculado pelas datas do pedido, sem LLM.
 "Cobertura" = fração dos pedidos realmente atrasados que o rótulo marca.
 <!-- INICIO:checagem -->
+| Fonte | Recorte | n (atraso conhecido) | Atrasados reais | `atraso`: atrasados marcados | `atraso`: marcados que atrasaram | `atraso` ou `nao_recebido`: atrasados marcados | `atraso` ou `nao_recebido`: marcados que atrasaram | κ (`atraso`) |
+|---|---|---|---|---|---|---|---|---|
+| Gemini (rótulos) | todas | 1881 | 294 (15.6%) | 125/294 (42.5%) | 125/182 (68.7%) | 232/294 (78.9%) | 232/348 (66.7%) | 0.46 |
+| Gemini (rótulos) | teste | 456 | 72 (15.8%) | 24/72 (33.3%) | 24/38 (63.2%) | 57/72 (79.2%) | 57/86 (66.3%) | 0.37 |
+| Qwen3.5-9B (rótulos) | todas | 1372 | 223 (16.3%) | 110/223 (49.3%) | 110/187 (58.8%) | 173/223 (77.6%) | 173/289 (59.9%) | 0.46 |
+| Qwen3.5-9B (rótulos) | teste | 456 | 72 (15.8%) | 35/72 (48.6%) | 35/62 (56.5%) | 58/72 (80.6%) | 58/93 (62.4%) | 0.44 |
+| TF-IDF + regressão logística | teste | 456 | 72 (15.8%) | 24/72 (33.3%) | 24/39 (61.5%) | 52/72 (72.2%) | 52/100 (52.0%) | 0.36 |
+| Qwen3.5-2B sem ajuste (Ollama q8_0) | teste | 456 | 72 (15.8%) | 52/72 (72.2%) | 52/166 (31.3%) | 60/72 (83.3%) | 60/176 (34.1%) | 0.28 |
+| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | teste | 456 | 72 (15.8%) | 39/72 (54.2%) | 39/87 (44.8%) | 61/72 (84.7%) | 61/121 (50.4%) | 0.38 |
+| Qwen3.5-2B + LoRA (este projeto) | teste | 456 | 72 (15.8%) | 28/72 (38.9%) | 28/41 (68.3%) | 58/72 (80.6%) | 58/84 (69.0%) | 0.43 |
+| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | teste | 456 | 72 (15.8%) | 27/72 (37.5%) | 27/40 (67.5%) | 57/72 (79.2%) | 57/83 (68.7%) | 0.42 |
+
+"Atrasados marcados" = dos pedidos que atrasaram pelas datas, quantos o rótulo marca (cobertura). "Marcados que atrasaram" = das avaliações com o rótulo, quantas tiveram atraso pelas datas (precisão).
+
+No teste, 62 dos 72 pedidos atrasados pelas datas foram avaliados **antes** de serem entregues (`resultados/avaliacao_antes_da_entrega.json`, gerado por `src/datas_avaliacao.py`). Nesses casos o cliente escreve "não recebi", e o rótulo esperado é `nao_recebido` (com `atraso` só se ele disser que o prazo passou). Por isso a cobertura de `atraso` sozinho é baixa para todos os modelos, e a coluna `atraso` ou `nao_recebido` é a comparação mais justa.
 <!-- FIM:checagem -->
 
 ## Como funciona
@@ -86,6 +157,12 @@ _Instruções completas quando o GGUF for exportado._
   professor.
 - **Revisão manual pendente**; quando feita, foi feita vendo o rótulo sugerido (**viés de
   ancoragem**: a concordância tende a sair superestimada).
+- **Vantagem do 2B ajustado inflada até a revisão**: ele imita o estilo do Gemini, e a referência
+  provisória é o próprio Gemini (ver "Leitura dos resultados" acima). A revisão com o rótulo
+  sugerido à vista (ancoragem) puxa na mesma direção, então mesmo depois dela a vantagem pode
+  continuar um pouco superestimada.
+- **Intervalos de confiança** (bootstrap do teste) cobrem só a variação de amostragem das 500
+  avaliações, não o erro dos rótulos nem a variação entre treinos.
 - **Cota gratuita do Gemini** (20 requisições/dia): lotes de 100 avaliações, e o baseline do
   Gemini com o prompt curto não foi executado (ver DECISOES.md D19-D21).
 - Um só seed, uma só divisão; categorias raras têm poucas dezenas de exemplos no teste.

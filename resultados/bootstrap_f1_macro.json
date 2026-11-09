@@ -1,0 +1,62 @@
+{
+  "n": 500,
+  "n_reamostras": 1000,
+  "seed": 42,
+  "metodo": "percentil, pareado",
+  "modelos": {
+    "TF-IDF + regressão logística": {
+      "f1_macro": 0.683466794020791,
+      "ic95": [
+        0.6452340005705267,
+        0.719191861260179
+      ]
+    },
+    "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+      "f1_macro": 0.5250591204891266,
+      "ic95": [
+        0.483065645819762,
+        0.5627063257789761
+      ]
+    },
+    "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+      "f1_macro": 0.7269568375712006,
+      "ic95": [
+        0.6889143536871799,
+        0.760702056111365
+      ]
+    },
+    "Qwen3.5-2B + LoRA (este projeto)": {
+      "f1_macro": 0.803416290267899,
+      "ic95": [
+        0.7688071665970079,
+        0.8380705733891292
+      ]
+    },
+    "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+      "f1_macro": 0.8083468293762677,
+      "ic95": [
+        0.7755346298468775,
+        0.8411449668305907
+      ]
+    }
+  },
+  "diferencas": {
+    "Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+      "diferenca_f1_macro": 0.0764594526966984,
+      "ic95": [
+        0.04185214966409096,
+        0.11328026235744376
+      ],
+      "fracao_reamostras_a_maior": 1.0
+    },
+    "Qwen3.5-2B + LoRA (este projeto) − TF-IDF + regressão logística": {
+      "diferenca_f1_macro": 0.11994949624710793,
+      "ic95": [
+        0.0871911089745639,
+        0.15812257882964362
+      ],
+      "fracao_reamostras_a_maior": 1.0
+    }
+  },
+  "referencia": "provisoria_gemini"
+}

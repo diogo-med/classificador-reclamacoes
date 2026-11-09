@@ -1,0 +1,189 @@
+{
+  "modelo_ollama": "cr-qwen2b-lora",
+  "n": 20,
+  "texto_identico": 17,
+  "json_identico": 17,
+  "rotulos_identicos": 20,
+  "exemplos": [
+    {
+      "review_id": "002e8e05b26cca7ce8704371bd06406d",
+      "ollama": "{\"sentimento\": \"neutro\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Cliente aguarda o recebimento do produto.\"}",
+      "kaggle": "{\"sentimento\": \"neutro\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Cliente aguarda o recebimento do produto.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 120
+    },
+    {
+      "review_id": "0054fba4a2c8ddef00af2a4805eec53d",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"atendimento\", \"incompleto\"], \"resumo\": \"Comprei duas cortinas e só veio uma, aguarda retorno.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"atendimento\", \"incompleto\"], \"resumo\": \"Comprei duas cortinas e só veio uma, aguarda retorno.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 160
+    },
+    {
+      "review_id": "018508d725399f218577be12037e0823",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"produto_errado\"], \"resumo\": \"Mateira não é de couro e veio modelo incorreto.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"produto_errado\"], \"resumo\": \"Mateira não é de couro e veio modelo incorreto.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 135
+    },
+    {
+      "review_id": "020ab9fe870b80216cc79a13b64205ff",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Muito bom e recomendado pelo cliente.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Muito bom e recomendado.\"}",
+      "texto_identico": false,
+      "json_identico": false,
+      "rotulos_identicos": true,
+      "prompt_tokens": 121
+    },
+    {
+      "review_id": "03286c3417c6c442d28a5c26d523ac1e",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Bom produto, apenas demora na entrega.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Bom produto, apenas demora na entrega.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 123
+    },
+    {
+      "review_id": "0340049ad5abcf4d0f5ee2445ca09ce0",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Ainda não recebeu o produto.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Ainda não recebeu o produto.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 122
+    },
+    {
+      "review_id": "04aa4b69f8cb548a385319d0c90642ac",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Ótimo produto, fácil de montar e chegou antes do prazo.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Ótimo produto, fácil de montar e chegou antes do prazo.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 136
+    },
+    {
+      "review_id": "05c115e82333328431774e0e7764abde",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Produto não foi recebido.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"nao_recebido\"], \"resumo\": \"Produto não foi recebido.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 118
+    },
+    {
+      "review_id": "08583ca89a82fe5d444ba1ea74207d09",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Produto muito bom entregue no prazo e produto da mãe adorou.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Produto muito bom entregue no prazo e produto da mãe adorou.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 132
+    },
+    {
+      "review_id": "0b771d60ec2a53024402650e82d43c3f",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"atendimento\", \"incompleto\"], \"resumo\": \"Pedido veio incompleto e aguarda retorno da loja.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"atendimento\", \"incompleto\"], \"resumo\": \"Pedido veio incompleto e aguarda retorno da loja.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 151
+    },
+    {
+      "review_id": "0c71f75ebc19248f5d3631859bfaeb4d",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"atraso\", \"nao_recebido\"], \"resumo\": \"Produto não chegou na data prevista.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"atraso\", \"nao_recebido\"], \"resumo\": \"Produto não chegou na data prevista.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 121
+    },
+    {
+      "review_id": "0c80c549846c5481daad2eb09ec37bfc",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Péssimo produto.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Péssimo produto.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 119
+    },
+    {
+      "review_id": "0c9b6ca9b3beaf0fd5d621f63844ea01",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"atraso\"], \"resumo\": \"Prazo de entrega atrasado e cliente consideraria desistir.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"atraso\"], \"resumo\": \"Prazo de entrega atrasado e cliente considerará desistir.\"}",
+      "texto_identico": false,
+      "json_identico": false,
+      "rotulos_identicos": true,
+      "prompt_tokens": 149
+    },
+    {
+      "review_id": "0e52515759d124f417d3a6c3aad4a480",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Produto entregue no prazo, bem embalado e muito bom.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Produto entregue no prazo, bem embalado e muito bom.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 145
+    },
+    {
+      "review_id": "117bb060cf46afaa4620b8b5c47d2177",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Gostou da compra, recebeu antes do prazo e com todos os acessórios.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Gostou da compra, recebeu antes do prazo e com todos os acessórios.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 142
+    },
+    {
+      "review_id": "11b54d6b032c22b3219b4c3030795d95",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto veio com defeito.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto veio com defeito.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 120
+    },
+    {
+      "review_id": "11ca35863e90b98a94a5a1dc489712e2",
+      "ollama": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Entrega realizada antes do prazo e TV funcionou bem.\"}",
+      "kaggle": "{\"sentimento\": \"positivo\", \"categorias\": [\"elogio\"], \"resumo\": \"Funcionou bem e entrega ocorreu antes do prazo.\"}",
+      "texto_identico": false,
+      "json_identico": false,
+      "rotulos_identicos": true,
+      "prompt_tokens": 129
+    },
+    {
+      "review_id": "1241d6377156a46c2fd60131f9e1e262",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto muito ruim com moldagem fraca.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto muito ruim com moldagem fraca.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 124
+    },
+    {
+      "review_id": "127fbfd58116551687cec80bcabbbbab",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto fragil e desconfortável, mas elogia o atendimento e entrega.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Produto fragil e desconfortável, mas elogia o atendimento e entrega.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 155
+    },
+    {
+      "review_id": "14613df954694f243dedeaa2c8a3a5c2",
+      "ollama": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Caixa veio amassada e produto sem proteção.\"}",
+      "kaggle": "{\"sentimento\": \"negativo\", \"categorias\": [\"defeito_qualidade\"], \"resumo\": \"Caixa veio amassada e produto sem proteção.\"}",
+      "texto_identico": true,
+      "json_identico": true,
+      "rotulos_identicos": true,
+      "prompt_tokens": 154
+    }
+  ]
+}

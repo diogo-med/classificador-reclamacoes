@@ -190,7 +190,8 @@ def consolidar(caminho: Path) -> pd.DataFrame:
     for linha in caminho.read_text(encoding="utf-8").splitlines():
         reg = json.loads(linha)
         for rid, r in reg["rotulos"].items():
-            linhas.append({"review_id": rid, **r, "modelo": reg["modelo"]})
+            linhas.append({"review_id": rid, **r, "modelo": reg["modelo"],
+                           "tamanho_lote": reg.get("tamanho_lote", len(reg["lote_ids"]))})
     return pd.DataFrame(linhas).drop_duplicates("review_id", keep="last")
 
 

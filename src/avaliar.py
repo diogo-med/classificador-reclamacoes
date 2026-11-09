@@ -45,6 +45,10 @@ MODELOS = {
     "Qwen3.5-2B + LoRA (este projeto)": ("qwen2b_lora_teste.jsonl", ""),
     "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": ("qwen2b_lora_ollama_teste.jsonl", ""),
 }
+# Linha do professor: os próprios rótulos do Gemini comparados aos rótulos humanos. Antes da
+# revisão, compará-los com eles mesmos daria F1 = 1,0 por definição; por isso a linha mostra
+# "pendente de revisão" até src/recalcular.py rodar com os rótulos humanos.
+LINHA_GEMINI = "Gemini (prompt de rotulagem, lotes de 100) vs. humano"
 NOTA_FAVORECIDA = ("favorecida por construção enquanto os rótulos do teste não forem revisados "
                    "(os rótulos provisórios vêm do próprio Gemini)")
 
@@ -136,6 +140,17 @@ def avaliar_modelo(pred: pd.DataFrame, ouro: pd.DataFrame) -> dict:
     }
 
 
+def nota_lotes_teste() -> str:
+    """Quantas avaliações do teste o Gemini rotulou em cada tamanho de lote."""
+    g = ler_rotulos("rotulos_gemini")
+    if g is None or "tamanho_lote" not in g.columns:
+        return ""
+    sp = pd.read_parquet(DATA_PROCESSED / "amostra.parquet").set_index("review_id")["split"]
+    cont = g[g["review_id"].map(sp) == "teste"]["tamanho_lote"].value_counts().sort_index()
+    partes = ", ".join(f"{v} em lotes de {int(k)}" for k, v in cont.items())
+    return f"\nRótulos do Gemini no teste: {partes} (ver DECISOES.md D19).\n"
+
+
 def fmt(x, casas=3):
     return "—" if x is None else f"{x:.{casas}f}"
 
@@ -146,6 +161,9 @@ def tabela_qualidade(res: dict, revisado: bool) -> str:
            "|---|---|---|---|---|---|---|---|---|\n")
     linhas = []
     for nome, r in res.items():
+        if r.get("pendente_de_revisao"):
+            linhas.append(f"| {nome} | pendente de revisão |" + " — |" * 8)
+            continue
         c, s = r["categorias"], r["sentimento"]
         marca = " ⚠️" if r.get("observacao") == "favorecida" and not revisado else ""
         linhas.append(
@@ -154,14 +172,22 @@ def tabela_qualidade(res: dict, revisado: bool) -> str:
             f"{fmt(s['acuracia'])} / {fmt(s['f1_macro'])} | {r['json_valido_pct']:.1f} | "
             f"{r['json_no_esquema_pct']:.1f} | "
             f"{r['checagem_atraso']['atraso']['cobertura_dos_atrasados_pct']:.1f} |")
-    nota = "" if revisado else f"\n⚠️ Linha {NOTA_FAVORECIDA}.\n"
+    favorecida = any(r.get("observacao") == "favorecida" for r in res.values())
+    nota = f"\n⚠️ Linha {NOTA_FAVORECIDA}.\n" if favorecida and not revisado else ""
+    if not revisado:
+        nota += (f"\nA linha **{LINHA_GEMINI}** fica pendente: antes da revisão, os rótulos de referência "
+                 "são os do próprio Gemini, e compará-los com eles mesmos daria F1 = 1,0 por definição. "
+                 "Ela é preenchida por `python src/recalcular.py` depois da revisão humana.\n")
+    nota += nota_lotes_teste()
     ref = ("rótulos revisados por humano" if revisado else
            "rótulos **provisórios** do Gemini (revisão humana pendente)")
-    return f"Teste: {next(iter(res.values()))['n']} avaliações; referência: {ref}.\n\n" + cab + "\n".join(linhas) + "\n" + nota
+    n = next(r["n"] for r in res.values() if "n" in r)
+    return f"Teste: {n} avaliações; referência: {ref}.\n\n" + cab + "\n".join(linhas) + "\n" + nota
 
 
 def tabela_f1_por_categoria(res: dict) -> str:
     cab = "| Modelo | " + " | ".join(f"`{c}`" for c in CATEGORIAS) + " |\n|---|" + "---|" * len(CATEGORIAS) + "\n"
+    res = {k: v for k, v in res.items() if not v.get("pendente_de_revisao")}
     linhas = [f"| {nome} | " + " | ".join(fmt(r["categorias"]["por_categoria"][c]["f1"], 2) for c in CATEGORIAS) + " |"
               for nome, r in res.items()]
     suporte = next(iter(res.values()))["categorias"]["por_categoria"]
@@ -238,6 +264,13 @@ def main():
             continue
         res[nome] = avaliar_modelo(pred, teste)
         res[nome]["observacao"] = obs
+    # Linha do professor (Gemini, prompt de rotulagem) — só depois da revisão humana
+    if revisado:
+        g = gemini.assign(json_valido=True, no_esquema=True)[["review_id", "json_valido", "no_esquema",
+                                                               "sentimento", "categorias"]]
+        res[LINHA_GEMINI] = avaliar_modelo(g, teste)
+    else:
+        res[LINHA_GEMINI] = {"pendente_de_revisao": True}
     saida["modelos"] = res
 
     # Etapa 8: checagem independente dos rotuladores (em todas as avaliações com rótulo)
@@ -249,7 +282,8 @@ def main():
         checagem[nome] = {s: checagem_atraso(g["atraso_real"], g["categorias"])
                           for s, g in [("todas", m), ("teste", m[m["split"] == "teste"])]}
     for nome, r in res.items():
-        checagem[nome] = {"teste": r["checagem_atraso"]}
+        if "checagem_atraso" in r:
+            checagem[nome] = {"teste": r["checagem_atraso"]}
     saida["checagem_atraso"] = checagem
 
     # Etapa 6: concordância Gemini x 9B (mede ambiguidade; não usada para mudar nada)
@@ -274,7 +308,7 @@ def main():
                            ("tabela_checagem_atraso.md", tat)]:
         (RESULTADOS / nome).write_text(conteudo, encoding="utf-8")
     principal = "Qwen3.5-2B + LoRA (este projeto)"
-    alvo = principal if principal in res else list(res)[-1]
+    alvo = principal if principal in res else [k for k, v in res.items() if "categorias" in v][-1]
     grafico_matrizes(res, alvo, RESULTADOS / "matriz_confusao.png")
     atualizar_readme({"qualidade": tq, "f1_categorias": tc, "eficiencia": te,
                       "concordancia": tca, "checagem": tat})

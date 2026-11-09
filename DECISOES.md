@@ -180,3 +180,25 @@ disponíveis em 08/11 (202 de treino, 20 de validação), só para testar de pon
 formato, treino, inferência e exportação GGUF antes de gastar GPU no 2B. **Esses rótulos são
 parciais e esse treino não entra em nenhum resultado:** a linha do 0.8B foi retirada de
 `src/avaliar.py`, e suas saídas ficam só em `outputs/`.
+
+**D29. Checagem de consistência dos lotes de 100, só com treino.** Até 08/11 à noite **nenhuma**
+requisição em lote de 100 tinha sido feita: as 250 avaliações rotuladas foram todas em lotes de 25,
+e a decisão D19 não tinha sido testada em nenhum split (muito menos no teste). Antes de rotular o
+restante, `src/checar_lote.py` gasta **2 requisições** (de no máximo 3 permitidas) com avaliações
+**só de treino** que já têm rótulo em lote de 25:
+- A: 100 delas num único lote de 100 → concordância lote 25 × lote 100;
+- B: 25 delas de novo num lote de 25 → piso de ruído (o Gemini não é perfeitamente determinístico
+  mesmo com temperatura 0).
+
+Regra fixada **antes** de ver o resultado: se o "conjunto de categorias idêntico" de 25 × 100 ficar
+mais de 10 p.p. abaixo do piso de ruído, o restante usa lotes de 50. Uso 2 requisições em vez de 3
+para preservar o mínimo de 2.000 rotuladas em 9/11 (250 + 18 × 100 = 2.050). Os rótulos dessa
+checagem ficam em `outputs/checagem_lote/` e não substituem os originais. Resultado em
+`resultados/checagem_lote.json`.
+
+**D30. Linha do Gemini na tabela de qualidade = "pendente de revisão" até o `recalcular.py`.**
+Com a referência provisória (rótulos do Gemini), comparar os rótulos do Gemini com eles mesmos dá
+F1 = 1,0 por definição, um número sem significado que não deve aparecer. A linha
+"Gemini (prompt de rotulagem, lotes de 100) vs. humano" só é calculada quando existem
+`data/processed/rotulos_revisados.parquet` (gerado pelo `recalcular.py`). A tabela também informa
+quantas avaliações do teste foram rotuladas em cada tamanho de lote (28 em lotes de 25, de 08/11).

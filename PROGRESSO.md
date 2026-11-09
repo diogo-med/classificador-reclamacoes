@@ -2,7 +2,12 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 08/11/2026, 23:40
+## Estado em 09/11/2026, 03:50
+
+Conferido às 03:49: `cr-rotulador-9b` e `cr-treino-qwen08b-lora` com status COMPLETE e saídas
+importadas; nenhum kernel rodando. Próximo passo: alarme das 05:10 → `checar_lote.py` → rotulagem.
+
+### Estado em 08/11/2026, 23:40
 
 ### Bloqueio principal: cota do Gemini
 O nível gratuito do `gemini-3.6-flash` permite **20 requisições/dia** (D19). Rotuladas até agora:

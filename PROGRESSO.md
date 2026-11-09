@@ -9,6 +9,9 @@ Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
   treino 1.200), 18 lotes de 100 sem nenhuma resposta inválida (2 erros 503 com nova tentativa).
 - Dataset privado do Kaggle atualizado; kernel `diogomede/cr-treino-qwen2b-lora` v1 enviado
   (treino com 1.200, privado, T4). Monitor em segundo plano até terminar.
+  Às 06:10 ainda na fila do Kaggle (esperando T4; nenhum outro kernel meu rodando).
+- Planilha `data/revisao/revisao_manual.csv` gerada: teste 500, treino aleatório 150,
+  discordância 74 (todas as disponíveis).
 
 ### 03:50
 

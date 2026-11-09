@@ -76,7 +76,9 @@ def model_card(met: dict, usuario: str) -> str:
     ref_ok = met.get("referencia") == "revisada"
     aviso = ("" if ref_ok else
              "> ⚠️ **Rótulos de teste provisórios.** As métricas abaixo usam como referência os rótulos do "
-             "próprio Gemini (o professor), ainda não revisados por humano.\n\n")
+             "próprio Gemini (o professor), ainda não revisados por humano. Como este modelo foi treinado "
+             "para imitar o estilo de rotulagem do Gemini, sua vantagem sobre os outros modelos da tabela "
+             "está **inflada** até a revisão; não leia a tabela como prova de que ele supera o Qwen3.5-9B.\n\n")
     return f"""---
 base_model: Qwen/Qwen3.5-2B
 datasets:
@@ -126,7 +128,7 @@ imitá-lo. A pergunta do projeto é quanto da qualidade do Gemini um 2B retém, 
 ollama create cr-qwen2b-lora -f Modelfile
 ```
 e chame `/api/chat` com `"think": false` e `temperature: 0`. O prompt de entrada é o
-`PROMPT_BASELINE` do repositório (`src/prompts.py`).
+`prompt_baseline` do repositório (`src/prompts.py`).
 
 ## Limitações
 - Dados de **e-commerce de 2016 a 2018** (Olist), não de delivery de comida.
@@ -137,7 +139,11 @@ e chame `/api/chat` com `"think": false` e `temperature: 0`. O prompt de entrada
 """
 
 
-def dataset_card(met: dict, usuario: str) -> str:
+def dataset_card(met: dict, usuario: str, rotulados: dict | None = None) -> str:
+    """rotulados: {split: (com rótulo, total)} contados nos parquets exportados."""
+    rotulados = rotulados or {}
+    linhas_rot = "\n".join(f"  - {s}: {c} de {n}" for s, (c, n) in rotulados.items())
+    total_rot = sum(c for c, _ in rotulados.values())
     rev = RESULTADOS / "revisao_humana.json"
     concordancia = "Revisão humana **pendente**: rótulos do teste são provisórios."
     if rev.exists():
@@ -163,7 +169,10 @@ source_datasets:
 
 Amostra de 4.000 avaliações com texto do
 [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)
-(CC BY-NC-SA 4.0; atribuição: Olist), rotuladas com sentimento, categorias de problema e resumo.
+(CC BY-NC-SA 4.0; atribuição: Olist). {total_rot} delas têm rótulo (sentimento, categorias de
+problema e resumo); as demais têm as colunas de rótulo vazias (a cota gratuita do Gemini limitou a
+rotulagem do treino):
+{linhas_rot}
 
 ## Origem e amostragem
 - Deduplicação (uma avaliação por pedido, a mais recente), só avaliações com texto.
@@ -179,7 +188,7 @@ Amostra de 4.000 avaliações com texto do
 
 ## Limitações
 - E-commerce de 2016-2018, não delivery de comida.
-- Rótulos gerados por LLM; a revisão humana foi feita vendo o rótulo sugerido (viés de ancoragem).
+- Rótulos gerados por LLM{"; a revisão humana foi feita vendo o rótulo sugerido (viés de ancoragem)" if rev.exists() else "; revisão humana pendente"}.
 - Nomes de lojas aparecem anonimizados pela Olist (lannister, stark, ...).
 """
 
@@ -204,7 +213,11 @@ def gerar(usuario: str):
                "dias_atraso", "rotulo_provisorio"]
     for split, nome in [("treino", "train"), ("validacao", "validation"), ("teste", "test")]:
         df[df["split"] == split][colunas].to_parquet(PUB / "dataset" / f"{nome}.parquet", index=False)
-    (PUB / "dataset" / "README.md").write_text(dataset_card(met, usuario), encoding="utf-8")
+    rotulados = {}
+    for split, nome in [("treino", "train"), ("validacao", "validation"), ("teste", "test")]:
+        d = df[df["split"] == split]
+        rotulados[nome] = (int(d["sentimento"].notna().sum()), int(len(d)))
+    (PUB / "dataset" / "README.md").write_text(dataset_card(met, usuario, rotulados), encoding="utf-8")
 
     for arq in ["app/app.py", "src/esquema.py", "src/prompts.py", "src/config.py"]:
         shutil.copy(RAIZ / arq, PUB / "space" / Path(arq).name)

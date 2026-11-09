@@ -149,7 +149,30 @@ A rotulagem precisa de `GEMINI_API_KEY` no `.env` (ver `.env.example`). O treino
 
 ## Rodar localmente com Ollama
 <!-- INICIO:ollama -->
-_Instruções completas quando o GGUF for exportado._
+O GGUF sai do notebook de treino no Kaggle (`outputs/kaggle/treino_qwen2b_lora/`) e fica fora do
+git. Copie para `modelos/` e crie o modelo no Ollama com o `ollama/Modelfile`, cujo TEMPLATE
+reproduz o prefixo usado no treino (raciocínio desligado, temperatura 0):
+
+```bash
+cp outputs/kaggle/treino_qwen2b_lora/gguf_qwen2b_lora_gguf/Qwen3.5-2B.Q8_0.gguf modelos/qwen2b_lora-Q8_0.gguf
+ollama create cr-qwen2b-lora -f ollama/Modelfile
+```
+
+O modelo espera o mesmo prompt do treino (`src/prompts.py`, `prompt_baseline`):
+
+```bash
+python src/inferir.py --backend ollama --modelo cr-qwen2b-lora --split teste --n 5 --saida outputs/exemplo.jsonl
+python - <<'PY'
+import sys; sys.path.insert(0, "src")
+from prompts import prompt_baseline
+from rotular import chamar_ollama
+print(chamar_ollama(prompt_baseline("Veio só um dos dois itens e a loja não responde."), "cr-qwen2b-lora")[0])
+PY
+```
+
+Conferência Ollama (q8_0) × Kaggle (16 bits) em 20 avaliações da validação:
+`resultados/conferencia_ollama_kaggle.json`. Para a demo sem Ollama (llama-cpp-python + Gradio,
+GGUF Q4_K_M): `python app/app.py`.
 <!-- FIM:ollama -->
 
 ## Limitações

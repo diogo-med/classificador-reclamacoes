@@ -22,3 +22,5 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 kaggle/dataset/
+publicacao/dataset/*.parquet
+publicacao/modelo/*.gguf

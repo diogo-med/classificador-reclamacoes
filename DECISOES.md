@@ -235,3 +235,25 @@ Conferências:
 
 **"LoRA bf16" na T4 = LoRA em 16 bits com fp16.** O que importa na recomendação do Unsloth é não
 usar 4 bits (QLoRA); a T4 não suporta bf16 em hardware, então o treino usa fp16.
+
+**D33. Intervalos de confiança por bootstrap pareado do teste.** `metricas.bootstrap_f1_macro`
+reamostra as 500 avaliações do teste com reposição (1.000 vezes, seed 42) e usa as **mesmas**
+reamostragens para todos os modelos, então a diferença entre dois modelos é calculada reamostra a
+reamostra (percentis 2,5 e 97,5). Pares reportados: 2B ajustado − 9B e 2B ajustado − TF-IDF; depois
+da revisão, também 2B ajustado − Gemini. O IC cobre só a variação de amostragem do teste: não cobre
+erro dos rótulos, viés de estilo (D34) nem variação entre treinos (um só seed). Alternativa
+descartada: teste de McNemar por categoria, que não dá um intervalo para o F1 macro.
+
+**D34. Antes da revisão, a vantagem do 2B ajustado não é afirmada.** O 2B ajustado imita o estilo
+de rotulagem do Gemini e a referência provisória é o Gemini, então a diferença para o 9B e o
+TF-IDF mistura qualidade com semelhança de estilo. README, tabela gerada e artigo dizem isso
+explicitamente e não afirmam que o 2B supera o 9B até o `recalcular.py` rodar com rótulos humanos.
+
+**D35. Checagem de atraso nas duas direções e avaliações feitas antes da entrega.** A tabela
+mostra, com números absolutos, quantos atrasados pelas datas cada fonte marca (cobertura) e
+quantos dos marcados de fato atrasaram (precisão), para `atraso` e para `atraso` ou
+`nao_recebido`. `src/datas_avaliacao.py` mostrou que a maioria dos pedidos atrasados do teste foi
+avaliada antes da entrega (`resultados/avaliacao_antes_da_entrega.json`): o texto diz "não
+recebi", o que explica a cobertura baixa de `atraso` sozinho. A regra de revisão
+(`data/revisao/COMO_REVISAR.md`) manda rotular pelo que o texto diz quando foi escrito. Nada disso
+mudou prompts, rótulos ou o modelo.

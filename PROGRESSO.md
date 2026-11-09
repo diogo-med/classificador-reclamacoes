@@ -2,7 +2,7 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 09/11/2026, 08:50
+## Estado em 09/11/2026, 09:30
 
 - 05:10: checagem de lote (D29): 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100.
 - Rotulagem do Gemini concluída para a cota de hoje: **2.050 rótulos** (teste 500, validação 350,
@@ -19,6 +19,11 @@ Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
   TF-IDF 0,683, 2B 0,525. Tabelas regeneradas no fim, depois da eficiência.
 - Análise de 10 erros: `resultados/analise_erros.md`.
 - Rodando: eficiência do `cr-qwen2b-lora` (livre e com format=esquema), 100 avaliações cada.
+- Pedidos do usuário (09/11 manhã), feitos: IC 95% por bootstrap pareado (D33), aviso de vantagem
+  inflada no README/tabela/artigo (D34), checagem de atraso nas duas direções com números absolutos
+  e avaliações feitas antes da entrega (D35), regras de fronteira em `COMO_REVISAR.md`.
+  `recalcular.py` testado numa cópia do repositório (sem tocar os arquivos reais). 18 testes passando.
+- Rascunho do artigo: `docs/artigo.md` (números provisórios, com fonte).
 - Planilha `data/revisao/revisao_manual.csv` gerada: teste 500, treino aleatório 150,
   discordância 74 (todas as disponíveis).
 

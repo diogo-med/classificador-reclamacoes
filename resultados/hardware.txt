@@ -15,7 +15,7 @@ Thread(s) per core:                      2
 Core(s) per socket:                      10
 Socket(s):                               1
 Stepping:                                4
-CPU(s) scaling MHz:                      41%
+CPU(s) scaling MHz:                      29%
 CPU max MHz:                             4400.0000
 CPU min MHz:                             400.0000
 BogoMIPS:                                4992.00
@@ -49,5 +49,5 @@ Vulnerability Vmscape:                   Mitigation; IBPB before exit to userspa
 
 $ free -h
                total        used        free      shared  buff/cache   available
-Mem:            15Gi       9.3Gi       1.1Gi       823Mi       5.4Gi       6.0Gi
-Swap:          4.0Gi       1.7Gi       2.3Gi
+Mem:            15Gi       7.7Gi       513Mi       812Mi       7.4Gi       7.6Gi
+Swap:          4.0Gi       2.6Gi       1.4Gi

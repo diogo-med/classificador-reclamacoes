@@ -29,6 +29,30 @@
       "tokens_entrada_medio": 137.34,
       "tokens_por_segundo": 3.407231853227545,
       "custo_por_1000": "US$ 0 de API (hardware próprio)"
+    },
+    "Qwen3.5-2B + LoRA (q8_0)": {
+      "onde": "Ollama local (CPU)",
+      "n": 100,
+      "latencia_media_s": 5.958639999999999,
+      "latencia_p95_s": 7.270499999999999,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "tokens_saida_medio": 35.16,
+      "tokens_entrada_medio": 137.34,
+      "tokens_por_segundo": 11.155598625988,
+      "custo_por_1000": "US$ 0 de API (hardware próprio)"
+    },
+    "Qwen3.5-2B + LoRA (q8_0, format=esquema)": {
+      "onde": "Ollama local (CPU)",
+      "n": 100,
+      "latencia_media_s": 6.07497,
+      "latencia_p95_s": 7.61515,
+      "json_valido_pct": 100.0,
+      "json_no_esquema_pct": 100.0,
+      "tokens_saida_medio": 35.26,
+      "tokens_entrada_medio": 137.34,
+      "tokens_por_segundo": 10.848359595885867,
+      "custo_por_1000": "US$ 0 de API (hardware próprio)"
     }
   },
   "premissas": [

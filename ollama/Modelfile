@@ -1,0 +1,20 @@
+# Qwen3.5-2B + LoRA (classificador-reclamacoes), GGUF q8_0.
+# O TEMPLATE reproduz exatamente o prefixo usado no treino:
+# apply_chat_template(..., add_generation_prompt=True, enable_thinking=False)
+# Uso: ollama create cr-qwen2b-lora -f ollama/Modelfile   (a partir da raiz do repositório)
+FROM ../modelos/qwen2b_lora-Q8_0.gguf
+
+TEMPLATE """<|im_start|>user
+{{ .Prompt }}<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+"""
+
+PARAMETER stop <|im_end|>
+PARAMETER stop <|im_start|>
+PARAMETER temperature 0
+PARAMETER presence_penalty 0
+PARAMETER num_ctx 2048

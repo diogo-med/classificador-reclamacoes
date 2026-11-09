@@ -60,8 +60,9 @@ def validar_lote(obj, ids: list[str]) -> dict:
         if not isinstance(item, dict) or item.get("id") not in pedidos:
             continue
         rotulo = {k: item.get(k) for k in ("sentimento", "categorias", "resumo")}
+        if isinstance(rotulo["categorias"], list):  # repetição não invalida um rótulo
+            rotulo["categorias"] = sorted(set(map(str, rotulo["categorias"])))
         if dentro_do_esquema(rotulo):
-            rotulo["categorias"] = sorted(set(rotulo["categorias"]))
             validos[item["id"]] = rotulo
     return validos
 

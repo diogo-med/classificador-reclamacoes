@@ -2,7 +2,12 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 09/11/2026, 03:50
+## Estado em 09/11/2026, 05:15
+
+05:10: checagem de lote feita (D29: 25×100 92%, ruído 96%, queda 4 p.p. → lotes de 100).
+Rotulagem rodando: 18 lotes de 100 (log em `outputs/log_rotulagem_0911.txt`).
+
+### 03:50
 
 Conferido às 03:49: `cr-rotulador-9b` e `cr-treino-qwen08b-lora` com status COMPLETE e saídas
 importadas; nenhum kernel rodando. Próximo passo: alarme das 05:10 → `checar_lote.py` → rotulagem.

@@ -126,7 +126,8 @@
       },
       "hiperparametros": {
         "C": 10,
-        "f1_macro_validacao": 0.7244181791125208
+        "f1_macro_validacao": 0.7244181791125208,
+        "rotulos_treino": "rotulos_gemini.parquet"
       }
     },
     "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
@@ -368,6 +369,126 @@
         }
       },
       "observacao": ""
+    },
+    "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+      "n": 500,
+      "sem_previsao": 1,
+      "json_valido_pct": 99.8,
+      "json_no_esquema_pct": 99.8,
+      "categorias": {
+        "f1_macro": 0.8190833904981024,
+        "f1_micro": 0.8640386162510056,
+        "acerto_exato": 0.788,
+        "por_categoria": {
+          "atraso": {
+            "f1": 0.7205882352941176,
+            "suporte": 50,
+            "matriz": {
+              "vp": 49,
+              "fp": 37,
+              "fn": 1,
+              "vn": 413
+            }
+          },
+          "nao_recebido": {
+            "f1": 0.9032258064516129,
+            "suporte": 92,
+            "matriz": {
+              "vp": 84,
+              "fp": 10,
+              "fn": 8,
+              "vn": 398
+            }
+          },
+          "incompleto": {
+            "f1": 0.9210526315789473,
+            "suporte": 40,
+            "matriz": {
+              "vp": 35,
+              "fp": 1,
+              "fn": 5,
+              "vn": 459
+            }
+          },
+          "produto_errado": {
+            "f1": 0.9133858267716536,
+            "suporte": 67,
+            "matriz": {
+              "vp": 58,
+              "fp": 2,
+              "fn": 9,
+              "vn": 431
+            }
+          },
+          "defeito_qualidade": {
+            "f1": 0.8421052631578947,
+            "suporte": 66,
+            "matriz": {
+              "vp": 56,
+              "fp": 11,
+              "fn": 10,
+              "vn": 423
+            }
+          },
+          "atendimento": {
+            "f1": 0.7397260273972602,
+            "suporte": 76,
+            "matriz": {
+              "vp": 54,
+              "fp": 16,
+              "fn": 22,
+              "vn": 408
+            }
+          },
+          "elogio": {
+            "f1": 0.9813333333333333,
+            "suporte": 187,
+            "matriz": {
+              "vp": 184,
+              "fp": 4,
+              "fn": 3,
+              "vn": 309
+            }
+          },
+          "outro": {
+            "f1": 0.53125,
+            "suporte": 35,
+            "matriz": {
+              "vp": 17,
+              "fp": 12,
+              "fn": 18,
+              "vn": 453
+            }
+          }
+        }
+      },
+      "sentimento": {
+        "acuracia": 0.938,
+        "f1_macro": 0.8876612448443376
+      },
+      "checagem_atraso": {
+        "n": 456,
+        "taxa_atraso_real": 0.15789473684210525,
+        "atraso": {
+          "concordancia_pct": 85.96491228070175,
+          "kappa": 0.44066237350505977,
+          "cobertura_dos_atrasados_pct": 48.611111111111114,
+          "precisao_pct": 56.45161290322581,
+          "atrasados_reais": 72,
+          "marcados": 62,
+          "marcados_e_atrasados": 35
+        },
+        "atraso_ou_nao_recebido": {
+          "concordancia_pct": 89.25438596491229,
+          "kappa": 0.6387272021730694,
+          "cobertura_dos_atrasados_pct": 80.55555555555556,
+          "precisao_pct": 62.365591397849464,
+          "atrasados_reais": 72,
+          "marcados": 93,
+          "marcados_e_atrasados": 58
+        }
+      },
+      "observacao": "prompt_rotulagem"
     },
     "Qwen3.5-2B + LoRA (este projeto)": {
       "n": 500,
@@ -640,6 +761,13 @@
           0.760702056111365
         ]
       },
+      "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+        "f1_macro": 0.8190833904981024,
+        "ic95": [
+          0.7844969720011666,
+          0.8506491932030589
+        ]
+      },
       "Qwen3.5-2B + LoRA (este projeto)": {
         "f1_macro": 0.803416290267899,
         "ic95": [
@@ -671,9 +799,65 @@
           0.15812257882964362
         ],
         "fracao_reamostras_a_maior": 1.0
+      },
+      "Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+        "diferenca_f1_macro": -0.015667100230203457,
+        "ic95": [
+          -0.046133202673686875,
+          0.016402580199998112
+        ],
+        "fracao_reamostras_a_maior": 0.166
       }
     },
     "referencia": "provisoria_gemini"
+  },
+  "sensibilidade": {
+    "n_completo": 500,
+    "n_nao_vistos": 462,
+    "excluidas_vistas": 38,
+    "peso_por_nota": {
+      "1": 0.5659731102746174,
+      "2": 0.5635391770278783,
+      "3": 0.5710393144003092,
+      "4": 1.6998227776829105,
+      "5": 1.701005803382267
+    },
+    "modelos": {
+      "TF-IDF + regressão logística": {
+        "completo": 0.683466794020791,
+        "nao_vistos": 0.6760430050788112,
+        "reponderado": 0.6687872107082216
+      },
+      "Qwen3.5-2B sem ajuste (Ollama q8_0)": {
+        "completo": 0.5250591204891266,
+        "nao_vistos": 0.5154983849186561,
+        "reponderado": 0.5303639633946489
+      },
+      "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)": {
+        "completo": 0.7269568375712006,
+        "nao_vistos": 0.7222672595016989,
+        "reponderado": 0.712699905662214
+      },
+      "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+        "completo": 0.8190833904981024,
+        "nao_vistos": 0.8149833726107713,
+        "reponderado": 0.8037720748988325
+      },
+      "Qwen3.5-2B + LoRA (este projeto)": {
+        "completo": 0.803416290267899,
+        "nao_vistos": 0.7987259102334323,
+        "reponderado": 0.7945120193113141
+      },
+      "Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama": {
+        "completo": 0.8083468293762677,
+        "nao_vistos": 0.8038981304940654,
+        "reponderado": 0.7985391183963074
+      }
+    },
+    "fracao_notas_1a3": {
+      "teste": 0.618,
+      "populacao": 0.35031752331811866
+    }
   },
   "checagem_atraso": {
     "Gemini (rótulos)": {

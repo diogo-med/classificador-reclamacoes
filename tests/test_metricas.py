@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from metricas import (checagem_atraso, concordancia, metricas_categorias,
-                      metricas_sentimento)
+                      metricas_sentimento, normalizar_texto)
 
 CATS = ["atraso", "elogio", "outro"]
 
@@ -20,6 +20,36 @@ def test_metricas_categorias_exemplo_feito_a_mao():
     # micro: VP=2, FP=1, FN=3 -> P=2/3, R=2/5 -> F1 = 2*(2/3*2/5)/(2/3+2/5) = 0.5
     assert m["f1_micro"] == pytest.approx(0.5)
     assert m["acerto_exato"] == pytest.approx(0.25)
+
+
+def test_metricas_categorias_pesos_uniformes_igual_sem_pesos():
+    verdade = [["atraso"], ["elogio"], ["atraso", "outro"], ["outro"]]
+    previsto = [["atraso"], ["atraso"], ["atraso"], []]
+    sem, com = metricas_categorias(verdade, previsto, CATS), metricas_categorias(verdade, previsto, CATS, [2.0] * 4)
+    for k in ["f1_macro", "f1_micro", "acerto_exato"]:
+        assert com[k] == pytest.approx(sem[k])
+    for c in CATS:
+        assert com["por_categoria"][c]["f1"] == pytest.approx(sem["por_categoria"][c]["f1"])
+    assert isinstance(sem["por_categoria"]["atraso"]["matriz"]["vp"], int)
+
+
+def test_metricas_categorias_com_pesos_feito_a_mao():
+    verdade, previsto = [["atraso"], ["elogio"]], [["atraso"], ["atraso"]]
+    m = metricas_categorias(verdade, previsto, CATS, sample_weight=[1, 3])
+    # atraso: VP=1, FP=3 (peso da 2ª linha), FN=0 -> F1 = 2/(2+3) = 0.4 (sem peso seria 2/3)
+    assert m["por_categoria"]["atraso"]["f1"] == pytest.approx(0.4)
+    assert m["por_categoria"]["atraso"]["matriz"] == {"vp": 1.0, "fp": 3.0, "fn": 0.0, "vn": 0.0}
+    assert m["por_categoria"]["elogio"]["suporte"] == pytest.approx(3.0)
+    assert m["f1_macro"] == pytest.approx(0.4 / 3)  # elogio e outro valem 0
+    assert m["acerto_exato"] == pytest.approx(0.25)  # só a 1ª linha (peso 1 de 4) acerta
+
+
+def test_normalizar_texto():
+    assert normalizar_texto("Muito BOM!!!") == "muito bom"
+    assert normalizar_texto("  Não   recebi,\tpéssimo... ") == "nao recebi pessimo"
+    assert normalizar_texto("Ótimo produto 10/10") == "otimo produto 10 10"
+    assert normalizar_texto(None) == ""
+    assert normalizar_texto("???") == ""
 
 
 def test_metricas_sentimento_invalido_conta_como_erro():

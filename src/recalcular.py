@@ -13,14 +13,27 @@ O que faz:
    correções humanas aplicadas); a partir daí src/avaliar.py usa esses rótulos;
 3. mede a concordância Gemini x humano no teste e nos 150 sorteados do treino
    (o bloco de discordância NÃO entra na estimativa: é enviesado);
-4. conta quantos rótulos de treino mudaram e, se algum mudou, recomenda retreinar
-   e imprime os comandos do Kaggle;
+4. decide se vale retreinar o 2B (regra abaixo) e imprime os comandos do Kaggle;
 5. roda src/avaliar.py.
+
+Regra de retreino (fixada antes de ver os dados da revisão). Retreinar custa fila e GPU no
+Kaggle e ~1 h de inferência local, então uma correção isolada não justifica. Estimamos a taxa
+de erro do Gemini no treino só pelo bloco `treino_aleatorio` (amostra aleatória do treino),
+com as linhas conferidas: "alterada" = sentimento ou conjunto de categorias final diferente
+do rótulo do Gemini. Intervalo de confiança de 95% de Wilson. Decisão:
+- menos de MIN_CONFERIDAS_RETREINO (50) linhas conferidas no bloco: "amostra insuficiente";
+- taxa >= LIMIAR_ALTERACAO_RETREINO (10%): retreino recomendado;
+- taxa abaixo do limiar: retreino opcional.
+O bloco `treino_discordancia` não entra na taxa (foi escolhido por discordância Gemini x 9B,
+logo superestima o erro), mas suas correções entram nos rótulos revisados e na contagem
+`rotulos_de_treino_alterados`. Os comandos de retreino são sempre listados (como opcionais
+quando a regra não recomenda).
 
 Uso: python src/recalcular.py [--planilha CAMINHO] [--sem-avaliar]
 """
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -33,6 +46,11 @@ from metricas import concordancia  # noqa: E402
 SEP = ";"
 MARCAS_CONFERIDO = {"x"}
 BLOCOS = ["teste", "treino_aleatorio", "treino_discordancia"]
+# regra de retreino (ver docstring)
+BLOCO_ESTIMATIVA = "treino_aleatorio"
+MIN_CONFERIDAS_RETREINO = 50
+LIMIAR_ALTERACAO_RETREINO = 0.10
+Z_95 = 1.959964
 
 
 class RevisaoIncompleta(ValueError):
@@ -85,9 +103,48 @@ def aplicar_revisao(planilha: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
         invalidas = [c for c in cats if c not in CATEGORIAS]
         if invalidas or not cats:
             erros.append(f"linha {linha_csv} ({r['review_id']}): categorias inválidas {invalidas or '(vazio)'}")
+        # mudou = rótulo final diferente do sugerido (célula preenchida com o mesmo valor não conta)
+        mudou = (sent != r["sentimento_sugerido"].strip().lower()
+                 or cats != separar(r["categorias_sugeridas"]))
         linhas.append({"review_id": r["review_id"], "bloco": r["bloco"], "sentimento": sent, "categorias": cats,
-                       "mudou": bool(r["sentimento_revisado"].strip() or r["categorias_revisadas"].strip())})
-    return pd.DataFrame(linhas), erros
+                       "mudou": bool(mudou)})
+    return pd.DataFrame(linhas, columns=["review_id", "bloco", "sentimento", "categorias", "mudou"]), erros
+
+
+def wilson(k: int, n: int, z: float = Z_95) -> tuple[float, float] | None:
+    """Intervalo de confiança de Wilson para a proporção k/n (None se n = 0)."""
+    if n <= 0:
+        return None
+    p = k / n
+    centro = (p + z * z / (2 * n)) / (1 + z * z / n)
+    meia = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+    return max(0.0, centro - meia), min(1.0, centro + meia)
+
+
+def decidir_retreino(alteradas: int, n: int) -> dict:
+    """Aplica a regra de retreino à taxa de alteração do bloco treino_aleatorio."""
+    taxa = alteradas / n if n else None
+    ic = wilson(alteradas, n)
+    if n < MIN_CONFERIDAS_RETREINO:
+        decisao = "amostra_insuficiente"
+    elif taxa >= LIMIAR_ALTERACAO_RETREINO:
+        decisao = "retreinar"
+    else:
+        decisao = "opcional"
+    taxa_txt = (f"{alteradas} de {n} rótulos alterados ({taxa:.1%}, IC 95% de Wilson {ic[0]:.1%} a {ic[1]:.1%})"
+                if n else "nenhuma linha conferida")
+    texto = {
+        "retreinar": f"Retreino recomendado: taxa de alteração no {BLOCO_ESTIMATIVA} >= "
+                     f"{LIMIAR_ALTERACAO_RETREINO:.0%}: {taxa_txt}.",
+        "opcional": f"Retreino opcional: taxa de alteração no {BLOCO_ESTIMATIVA} abaixo de "
+                    f"{LIMIAR_ALTERACAO_RETREINO:.0%}: {taxa_txt}.",
+        "amostra_insuficiente": f"Amostra insuficiente para decidir: {n} linhas conferidas no {BLOCO_ESTIMATIVA} "
+                                f"(mínimo {MIN_CONFERIDAS_RETREINO}); {taxa_txt}. Retreino opcional.",
+    }[decisao]
+    return {"bloco": BLOCO_ESTIMATIVA, "n_conferidas": int(n), "alteradas": int(alteradas),
+            "taxa_alteracao": taxa, "ic95_wilson": list(ic) if ic else None,
+            "limiar_taxa": LIMIAR_ALTERACAO_RETREINO, "min_conferidas": MIN_CONFERIDAS_RETREINO,
+            "decisao": decisao, "texto": texto}
 
 
 def concordancia_humano(gemini: pd.DataFrame, humano: pd.DataFrame) -> dict:
@@ -138,9 +195,14 @@ def recalcular(planilha_csv: Path, destino_dir: Path = DATA_PROCESSED, resultado
 
     antes = gemini.set_index("review_id")
     treino_h = humano[humano["bloco"].str.startswith("treino")]
-    mudaram_treino = sum(
-        1 for r in treino_h.itertuples()
-        if r.sentimento != antes.at[r.review_id, "sentimento"] or r.categorias != antes.at[r.review_id, "categorias"])
+    # alterada = rótulo final diferente do rótulo do Gemini
+    alterada = pd.Series(
+        [r.sentimento != antes.at[r.review_id, "sentimento"]
+         or list(r.categorias) != list(antes.at[r.review_id, "categorias"]) for r in treino_h.itertuples()],
+        index=treino_h.index, dtype=bool)
+    mudaram_treino = int(alterada.sum())
+    estimativa = treino_h["bloco"] == BLOCO_ESTIMATIVA
+    retreino = decidir_retreino(int(alterada[estimativa].sum()), int(estimativa.sum()))
     relatorio = {
         "linhas_revisadas": int(len(humano)),
         "conferidas_por_bloco": conferidas,
@@ -150,10 +212,10 @@ def recalcular(planilha_csv: Path, destino_dir: Path = DATA_PROCESSED, resultado
         "observacao": ("A revisão foi feita vendo o rótulo sugerido pelo Gemini: há viés de ancoragem, "
                        "e a concordância tende a ser superestimada."),
     }
-    if mudaram_treino:
-        relatorio["recomendacao"] = (f"{mudaram_treino} rótulos de treino mudaram: recomendo retreinar o 2B "
-                                     "com os rótulos revisados.")
-        relatorio["comandos_retreino"] = comandos_retreino()
+    relatorio["estimativa_erro_gemini_treino"] = retreino
+    relatorio["retreino_recomendado"] = retreino["decisao"] == "retreinar"
+    relatorio["recomendacao"] = retreino["texto"]
+    relatorio["comandos_retreino"] = comandos_retreino()
     resultados_dir.mkdir(exist_ok=True)
     (resultados_dir / "revisao_humana.json").write_text(json.dumps(relatorio, ensure_ascii=False, indent=2))
     return relatorio
@@ -176,8 +238,9 @@ def main():
               f"kappa médio {c['kappa_medio_categorias']:.2f}")
     print(f"{rel['linhas_com_correcao']} de {rel['linhas_revisadas']} linhas corrigidas; "
           f"{rel['rotulos_de_treino_alterados']} rótulos de treino alterados.")
-    if "recomendacao" in rel:
-        print("\n" + rel["recomendacao"] + " Comandos:\n  " + "\n  ".join(rel["comandos_retreino"]))
+    print("\n" + rel["recomendacao"])
+    rotulo = "Comandos para retreinar" if rel["retreino_recomendado"] else "Comandos (opcionais) para retreinar"
+    print(f"{rotulo}:\n  " + "\n  ".join(rel["comandos_retreino"]))
     if not a.sem_avaliar:
         import avaliar
         avaliar.main()

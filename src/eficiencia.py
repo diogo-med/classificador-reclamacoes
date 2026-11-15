@@ -66,7 +66,14 @@ def medir_ollama(modelo: str, nome: str, restrito: bool):
 def medir_gemini(nome: str, n: int):
     df = selecionar("teste", None, None).set_index("review_id").loc[ids_fixos()[:n]].reset_index()
     saida = PASTA / f"{arquivo(nome)}.jsonl"
-    inferir(df, "gemini", None, saida, pausa=4)
+    inferir(df, "gemini", None, saida, pausa=4)  # para limpo se a cota diária acabar
+    medidas = len(saida.read_text(encoding="utf-8").splitlines()) if saida.exists() else 0
+    if not medidas:
+        print(f"Nenhuma chamada ao Gemini concluída: '{nome}' não foi registrado.", flush=True)
+        return
+    if medidas < len(df):
+        print(f"Aviso: só {medidas} de {len(df)} chamadas medidas (cota); registrando com n={medidas}. "
+              "Rode de novo depois para completar.", flush=True)
     registrar(nome, saida, onde="API (rede)")
 
 

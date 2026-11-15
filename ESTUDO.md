@@ -95,8 +95,13 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
 
 ## 10. Perguntas prováveis numa entrevista
 
-1. **Por que não usar só o Gemini?** Custo, latência, cota e privacidade. Em volume (milhões de
-   avaliações), um 2B local custa só o hardware. A tabela de eficiência quantifica isso.
+1. **Por que não usar só o Gemini?** Custo, latência, cota e privacidade. Medido em 10 chamadas
+   (prompt curto, raciocínio no padrão do modelo): 6,85 s em média pela API (p95 11,50 s), contra
+   5,96 s do 2B ajustado na CPU do notebook, e US$ 2,995 por 1.000 avaliações ao preço atual,
+   porque cada chamada gera em média 772 tokens de saída cobrados, quase todos de raciocínio
+   (`resultados/tabela_eficiencia.md`). Em volume (milhões de avaliações), isso pesa; um 2B local
+   custa só o hardware. Ressalvas: n=10, inclui rede, nível gratuito, e desligar ou reduzir o
+   raciocínio do Gemini mudaria latência e custo (não testado).
 2. **Se os rótulos vêm do Gemini, como você sabe que estão certos?** Não sei sem revisão: por isso
    há (a) revisão humana do teste, (b) o segundo rotulador e (c) a checagem do atraso pelas datas.
 3. **O aluno pode superar o professor?** Nos rótulos do professor, quase nunca. Em rótulos
@@ -115,17 +120,43 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
    segundos e é interpretável.
 9. **Qual o maior risco de colocar em produção?** Mudança de domínio (comida ≠ e-commerce),
    categorias ambíguas e saídas fora do esquema. Mitigação: validação de esquema na saída,
-   decodificação restrita (`format` do Ollama) e monitorar a distribuição de categorias.
-10. **A tabela mostra o 2B ajustado acima do 9B. Isso prova que ele é melhor?** Não, antes da
-    revisão. A referência provisória é o Gemini, e o 2B foi treinado para imitar o estilo dele
-    (quais categorias marcar juntas, onde passa a fronteira de `atendimento`). O 9B nunca viu
-    esse estilo. O IC da diferença exclui zero, mas ele só cobre o acaso da amostra, não esse viés.
-    A afirmação só vale com rótulos humanos, e mesmo aí a ancoragem puxa a favor do Gemini.
+   decodificação restrita (`format` do Ollama; na demo, uma gramática gerada do esquema) e
+   monitorar a distribuição de categorias.
+10. **A tabela mostra o 2B ajustado acima do 9B. Isso prova que ele é melhor?** Não. Há dois
+    motivos. (a) **Prompt:** o "9B sem ajuste" recebe o prompt curto, sem as definições das
+    categorias. O mesmo 9B com o prompt de rotulagem (linha †) tem F1 macro 0,819 contra 0,727, e
+    a diferença 2B ajustado − 9B few-shot é −0,016 [−0,046; +0,016]: empate. Ou seja, boa parte
+    dos +0,076 era efeito de prompt. (b) **Estilo:** a referência provisória é o Gemini, e o 2B foi
+    treinado para imitar o estilo dele (quais categorias marcar juntas, onde passa a fronteira de
+    `atendimento`). O IC só cobre o acaso da amostra, não esse viés. O que dá para dizer hoje: o 2B
+    ajustado, com um prompt de ~137 tokens, empata em concordância com o Gemini com um 9B de prompt
+    longo, e é ~4,4× mais rápido na CPU que o 9B mesmo com o prompt curto (5,96 s × 26,14 s). A
+    comparação de qualidade só vale com rótulos humanos, e pode até inverter; mesmo aí a ancoragem
+    puxa a favor do Gemini.
 11. **Por que o 2B ajustado ficou mais rápido que o 2B sem ajuste, se é o mesmo tamanho?**
     Respostas mais curtas e diretas (menos tokens gerados); a velocidade por token é parecida
     (`tokens_saida_medio` e `tokens_por_segundo` em `resultados/eficiencia.json`).
-12. **O que faria com mais tempo?** Revisar mais rótulos de treino, testar o 4B, calibrar limiares
-    por categoria, medir com rótulos humanos cegos (sem sugestão) e testar em dados de delivery.
+12. **O que faria com mais tempo?** Rodar o 2B sem ajuste com o prompt de rotulagem (separa o
+    efeito do prompt do efeito do LoRA), rotular as 1.950 avaliações de treino restantes, treinar
+    com vários seeds, testar o 4B, calibrar limiares por categoria, revisar uma subamostra às cegas
+    (sem sugestão) para medir a ancoragem e testar em dados de delivery.
+13. **Seus baselines são justos?** Não totalmente, e isso apareceu na análise. Os baselines "sem
+    ajuste" recebem o prompt curto, e o 2B ajustado também, mas ele aprendeu as regras no treino;
+    os outros nunca as viram. Por isso a tabela tem a linha † (9B com o prompt de rotulagem), que
+    empata com o 2B ajustado. Falta o 2B sem ajuste com o prompt de rotulagem. Também corrigi uma
+    assimetria futura: o TF-IDF treina sempre com os mesmos rótulos que o LoRA usou (DECISOES.md
+    D39), para a revisão humana não melhorar só um dos lados.
+14. **Há vazamento por textos repetidos?** Não de avaliações (a divisão é por `review_id`), mas há
+    textos iguais: 38 avaliações do teste têm texto normalizado idêntico ao de alguma do treino
+    rotulado (quase sempre curtos, como "muito bom"). Sem elas (n=462), o F1 macro cai no máximo
+    0,010 e a ordem dos modelos não muda (`resultados/tabela_sensibilidade.md`). Não tirei esses
+    textos do teste porque eles fazem parte da distribuição real.
+15. **O teste representa a população?** Não na distribuição de notas: tem 62% de notas 1-3, contra
+    35% na população com texto, porque a amostragem deu peso maior às notas baixas para as
+    categorias de problema terem exemplos. Reponderando cada avaliação pela fração da sua nota na
+    população, o F1 macro cai de 0,008 a 0,015 (sobe 0,005 no 2B sem ajuste) e a ordem não muda
+    (`resultados/tabela_sensibilidade.md`). O domínio (e-commerce 2016-2018) continua sendo outra
+    diferença que nenhum peso corrige.
 
 ## 11. Pontos fracos (honestos)
 - **Rótulos de LLM** e **revisão vendo a sugestão** (viés de ancoragem): a concordância
@@ -138,7 +169,14 @@ CPU, sem custo de API? A métrica final é medida em rótulos revisados por huma
 - **Um só seed e uma só divisão:** o IC por bootstrap cobre a amostra de teste, mas não a
   variação entre treinos (seria preciso treinar com vários seeds).
 - **Vantagem do 2B inflada até a revisão** (ver pergunta 10).
-- **Treino com 1.200 exemplos**, não 3.150: a cota do Gemini limitou a rotulagem.
-- **Latência do Gemini não medida:** a cota do dia acabou na rotulagem; a tabela de eficiência só
-  tem os modelos locais e o preço oficial do Gemini.
+- **Assimetria de prompt nos baselines:** a vantagem sobre o "9B sem ajuste" era em boa parte
+  efeito de prompt; com o prompt de rotulagem, o 9B empata com o 2B ajustado (pergunta 10). Falta
+  o 2B sem ajuste com o prompt de rotulagem (exige uma opção nova em `src/inferir.py`).
+- **Treino com 1.200 exemplos**, não 3.150: a cota do Gemini limitou a rotulagem; rotular o resto
+  custaria um dia de cota e um retreino.
+- **Latência do Gemini com n=10**, pela rede, no nível gratuito e com o raciocínio no padrão; não
+  testei o Gemini com o raciocínio desligado.
+- **Teste enriquecido em notas baixas** (62% de notas 1-3 contra 35%) e com 38 textos repetidos
+  do treino; a tabela de sensibilidade mostra que nenhum dos dois muda a ordem (perguntas 14 e 15).
+- **Revisão sem subamostra cega:** a ancoragem é declarada, mas não medida.
 - **Teste de 500:** categorias raras têm poucas dezenas de positivos; o F1 delas é instável.

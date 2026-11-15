@@ -87,4 +87,16 @@ python src/recalcular.py
 Ele confere a coluna `conferido` (recusa se faltar `x` no teste), valida a planilha (aponta
 linhas com valor inválido), aplica as correções das linhas com `x`, mede a concordância Gemini ×
 humano, regenera métricas, tabelas e README (incluindo quantas linhas de cada bloco foram
-conferidas) e diz se é preciso retreinar.
+conferidas e o aviso de status no topo) e decide se vale retreinar por uma regra de limiar
+fixada antes da revisão:
+- a taxa de rótulos alterados (sentimento ou conjunto de categorias final diferente do Gemini) é
+  estimada só nas linhas conferidas do bloco `treino_aleatorio`, com IC de 95% de Wilson;
+- menos de 50 linhas conferidas nesse bloco: "amostra insuficiente" (retreino opcional);
+- taxa de 10% ou mais: retreino recomendado;
+- taxa abaixo de 10%: retreino opcional.
+
+O bloco `treino_discordancia` não entra na taxa (é enviesado), mas suas correções entram nos
+rótulos revisados. Os comandos de retreino são sempre impressos, marcados como opcionais quando a
+regra não recomenda. Preencher a coluna revisada com o mesmo valor sugerido não conta como
+correção. Para a decisão de retreino ter base, confira pelo menos 50 linhas do
+`treino_aleatorio`.

@@ -2,7 +2,37 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado em 15/11/2026: análise conceitual (branch `analise-conceitual`, commits locais, sem push)
+## Estado em 17/11/2026: publicado no Hugging Face com rótulos provisórios
+
+> ⚠️ Publicado **antes** da revisão humana: tudo o que está no Hugging Face usa os rótulos
+> provisórios do Gemini (`rotulo_provisorio = True` em todas as linhas do dataset; o card do
+> modelo avisa que a vantagem do 2B está inflada e que a revisão está pendente).
+
+Publicado em 17/11/2026 (públicos, abrem sem login):
+- Modelo: https://huggingface.co/Diogv20/classificador-reclamacoes-qwen3.5-2b (adaptador LoRA,
+  GGUF Q8_0 e Q4_K_M, Modelfile; tamanhos conferidos contra os arquivos locais)
+- Dataset: https://huggingface.co/datasets/Diogv20/classificador-reclamacoes-olist (train 3.150 /
+  validation 350 / test 500; rotuladas 1.200 / 350 / 500)
+- GitHub: https://github.com/diogo-med/classificador-reclamacoes (`analise-conceitual` com merge
+  em `main`; README com a seção "Modelo, dataset e demo")
+
+**Sem Space:** o Hugging Face exige conta PRO para Spaces Gradio/Docker (erro 402 ao criar o
+Space). A demo fica local (`python app/app.py`) ou no Ollama; `publicar.py --sem-space` pula o
+Space. Os arquivos do Space continuam em `publicacao/space/`, se um dia houver PRO.
+
+Antes de publicar: git em dia com o origin, pytest (47) passando, `avaliar.py` sem diferença no
+git, token conferido, GGUF Q4_K_M testado localmente (JSON no esquema em 2 de 2 avaliações do
+teste).
+
+### Pendente depois da publicação
+1. Revisão humana (lista de tarefas abaixo) → `python src/recalcular.py`.
+2. Corrigir a marcação `rotulo_provisorio` do `publicar.py` se a revisão do treino for parcial
+   (observação abaixo).
+3. `python src/publicar.py --enviar --sem-space`: sobrescreve os cards, o dataset, os GGUFs e o
+   adaptador nos repositórios já públicos (`create_repo(..., exist_ok=True)` não muda a
+   visibilidade). Se houver retreino, os GGUFs novos entram em `modelos/` antes.
+
+## Estado em 15/11/2026: análise conceitual (superado pelo bloco de 17/11: a branch foi enviada e teve merge em `main`)
 
 > ⚠️ A revisão humana dos rótulos do teste **ainda não foi feita**. Toda a referência é
 > provisória (rótulos do Gemini); os números abaixo são concordância com o Gemini. Nada aqui

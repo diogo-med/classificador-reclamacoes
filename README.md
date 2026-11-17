@@ -50,7 +50,10 @@ No Hugging Face, com os rótulos **provisórios** do Gemini (serão atualizados 
 humana):
 - Modelo (adaptador LoRA e GGUFs Q8_0 e Q4_K_M): [Diogv20/classificador-reclamacoes-qwen3.5-2b](https://huggingface.co/Diogv20/classificador-reclamacoes-qwen3.5-2b)
 - Dataset (4.000 avaliações, 2.050 rotuladas): [Diogv20/classificador-reclamacoes-olist](https://huggingface.co/datasets/Diogv20/classificador-reclamacoes-olist)
-- Demo (Gradio, CPU): [Diogv20/classificador-reclamacoes-demo](https://huggingface.co/spaces/Diogv20/classificador-reclamacoes-demo)
+- Demo: local, `python app/app.py` (Gradio + llama-cpp-python, CPU, GGUF Q4_K_M de `modelos/` ou
+  baixado do repositório do modelo com `CR_HF_REPO=Diogv20/classificador-reclamacoes-qwen3.5-2b`),
+  ou pelo Ollama (ver "Rodar localmente com Ollama"). Não há Space público: Spaces Gradio no
+  Hugging Face exigem conta PRO.
 
 ## Resultados
 

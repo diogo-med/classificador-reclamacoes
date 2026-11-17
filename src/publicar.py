@@ -114,7 +114,8 @@ imitá-lo. A pergunta do projeto é quanto da qualidade do Gemini um 2B retém, 
 
 Código, avaliação completa e decisões: [{GITHUB.removeprefix("https://")}]({GITHUB}).
 Dataset: [{usuario}/{NOME_DATASET}](https://huggingface.co/datasets/{usuario}/{NOME_DATASET}).
-Demo: [{usuario}/{NOME_SPACE}](https://huggingface.co/spaces/{usuario}/{NOME_SPACE}).
+Demo local (Gradio + llama-cpp-python, CPU, GGUF Q4_K_M): `python app/app.py` no repositório
+do GitHub; ou Ollama (ver "Como usar" abaixo).
 
 {aviso}## Resultados no teste
 
@@ -253,7 +254,7 @@ Rótulos de treino gerados pelo Gemini (revisão humana pendente). Código: [{GI
     print("gerado em", PUB)
 
 
-def enviar(usuario: str, token: str):
+def enviar(usuario: str, token: str, com_space: bool = True):
     from huggingface_hub import HfApi
     api = HfApi(token=token)
     mid, did, sid = f"{usuario}/{NOME_MODELO}", f"{usuario}/{NOME_DATASET}", f"{usuario}/{NOME_SPACE}"
@@ -266,6 +267,10 @@ def enviar(usuario: str, token: str):
         api.upload_folder(repo_id=mid, folder_path=str(ADAPTADOR), path_in_repo="adaptador")
     api.create_repo(did, repo_type="dataset", private=True, exist_ok=True)
     api.upload_folder(repo_id=did, folder_path=str(PUB / "dataset"), repo_type="dataset")
+    if not com_space:
+        print(f"Enviado (privado se novo): {mid}, {did}. Space pulado (--sem-space).")
+        return
+    # Spaces Gradio em cpu-basic exigem conta PRO no HF desde 2026 (402 Payment Required).
     api.create_repo(sid, repo_type="space", space_sdk="gradio", private=True, exist_ok=True)
     api.add_space_variable(sid, "CR_HF_REPO", mid)
     api.upload_folder(repo_id=sid, folder_path=str(PUB / "space"), repo_type="space")
@@ -277,6 +282,8 @@ def enviar(usuario: str, token: str):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--enviar", action="store_true")
+    p.add_argument("--sem-space", action="store_true",
+                   help="não cria/envia o Space (Spaces Gradio exigem conta PRO no HF)")
     p.add_argument("--usuario", default=None, help="usuário do HF (padrão: o dono do token)")
     a = p.parse_args()
     usuario = a.usuario or os.getenv("HF_USUARIO") or "SEU_USUARIO_HF"
@@ -292,7 +299,7 @@ def main():
             usuario = whoami(token=token)["name"]
     gerar(usuario)
     if a.enviar:
-        enviar(usuario, token)
+        enviar(usuario, token, com_space=not a.sem_space)
 
 
 if __name__ == "__main__":

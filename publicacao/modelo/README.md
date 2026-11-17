@@ -55,7 +55,8 @@ imitá-lo. A pergunta do projeto é quanto da qualidade do Gemini um 2B retém, 
 
 Código, avaliação completa e decisões: [github.com/diogo-med/classificador-reclamacoes](https://github.com/diogo-med/classificador-reclamacoes).
 Dataset: [Diogv20/classificador-reclamacoes-olist](https://huggingface.co/datasets/Diogv20/classificador-reclamacoes-olist).
-Demo: [Diogv20/classificador-reclamacoes-demo](https://huggingface.co/spaces/Diogv20/classificador-reclamacoes-demo).
+Demo local (Gradio + llama-cpp-python, CPU, GGUF Q4_K_M): `python app/app.py` no repositório
+do GitHub; ou Ollama (ver "Como usar" abaixo).
 
 > ⚠️ **Rótulos de teste provisórios.** As métricas abaixo usam como referência os rótulos do próprio Gemini (o professor), ainda não revisados por humano. Como este modelo foi treinado para imitar o estilo de rotulagem do Gemini, sua vantagem sobre os outros modelos da tabela está **inflada** até a revisão; não leia a tabela como prova de que ele supera o Qwen3.5-9B.
 

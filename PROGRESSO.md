@@ -2,7 +2,126 @@
 
 Atualizado ao fim de cada etapa. Se a sessão cair, retomar a partir daqui.
 
-## Estado final em 09/11/2026, 10:30: pronto para revisão
+## Estado em 15/11/2026: análise conceitual (branch `analise-conceitual`, commits locais, sem push)
+
+> ⚠️ A revisão humana dos rótulos do teste **ainda não foi feita**. Toda a referência é
+> provisória (rótulos do Gemini); os números abaixo são concordância com o Gemini. Nada aqui
+> afirma que um modelo supera outro.
+
+Nada foi retreinado, re-inferido, enviado ao Kaggle nem publicado no Hugging Face. As mudanças
+de código e de avaliação estão commitadas na branch `analise-conceitual` (sem push; a `main` não foi alterada).
+Conferido:
+- `python src/avaliar.py` continua idempotente (rodar duas vezes não muda nada) e os números
+  antigos das tabelas não mudaram; só entraram linhas e tabelas novas;
+- `pytest`: 47 testes passando (eram 25).
+
+Tabelas atuais: `resultados/tabela_qualidade.md`, `resultados/tabela_f1_categorias.md`,
+`resultados/tabela_sensibilidade.md`, `resultados/tabela_eficiencia.md`,
+`resultados/tabela_concordancia.md`, `resultados/tabela_checagem_atraso.md` (e os blocos gerados
+no README). Não estão copiadas aqui para não divergirem.
+
+### O que foi feito hoje
+- **Linha nova na tabela de qualidade:** "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de
+  25) †", a partir dos rótulos que o 9B já tinha feito no teste como segundo rotulador (499 de
+  500; `data/processed/rotulos_9b.parquet`), e o par 2B ajustado − 9B few-shot no bootstrap (D37).
+- **Tabela de sensibilidade** (`resultados/tabela_sensibilidade.md`, bloco no README): teste
+  completo, sem textos repetidos do treino e reponderado por nota (D38).
+- **TF-IDF treina com os mesmos rótulos do LoRA**; o notebook de treino grava
+  `arquivo_rotulos` (D39).
+- **Regra de retreino por limiar em `recalcular.py`** (D40); `linhas_com_correcao` só conta
+  mudança real de rótulo.
+- **Bloco `status` gerado** no topo do README (provisório × revisado), refeito pelo
+  `avaliar.py`.
+- **Demo** (`app/app.py`): gramática gerada do esquema (ligada por padrão; `CR_SEM_GRAMATICA=1`
+  desliga), limite de 1.500 caracteres e tratamento de erro (D41).
+- **Cota do Gemini**: nova tentativa unificada em `rotular.chamar_com_retentativa`, parada limpa
+  por cota diária também na inferência/eficiência, tokens de uso por lote na rotulagem (D43).
+- **Latência do Gemini medida** (10 chamadas; D42), fechando a pendência de 09/11.
+- Documentação: README (leitura dos resultados, como funciona, limitações), DECISOES.md D37-D43,
+  ESTUDO.md (perguntas 1, 10, 12 a 15 e pontos fracos), `docs/artigo.md`,
+  `data/revisao/COMO_REVISAR.md` ("Depois de revisar").
+
+### Achados (contra os rótulos do Gemini)
+- **Efeito de prompt.** O 9B com o prompt de rotulagem tem F1 macro 0,819 [0,784; 0,851] e acerto
+  exato 0,788, contra 0,727 com o prompt curto e 0,803 do 2B ajustado. Diferença 2B ajustado − 9B
+  few-shot: −0,016 [−0,046; +0,016], IC inclui zero (empate). A vantagem de +0,076 [+0,042;
+  +0,113] sobre o "9B sem ajuste" era em boa parte efeito de prompt
+  (`resultados/tabela_qualidade.md`, `resultados/bootstrap_f1_macro.json`).
+- **Leitura honesta:** o 2B ajustado com o prompt curto (~137 tokens de entrada) empata, em
+  concordância com o Gemini, com um 9B de prompt longo, e na mesma CPU é ~4,4× mais rápido que o
+  9B com o prompt curto (5,96 s × 26,14 s); o 9B com o prompt longo não foi medido em CPU. A linha
+  † rodou em lotes de 25, com decodificação restrita, na GPU do Kaggle; com rótulos humanos o
+  empate pode mudar ou inverter.
+- **Sensibilidade:** a ordem dos modelos não muda em nenhum recorte. Sem os 38 textos repetidos
+  (n=462), o F1 macro cai no máximo 0,010; reponderado por nota (teste 62% de notas 1-3,
+  população 35%), cai de 0,008 a 0,015 (sobe 0,005 no 2B sem ajuste)
+  (`resultados/tabela_sensibilidade.md`).
+- **Gemini pela API** (n=10, prompt curto, sem esquema, raciocínio no padrão): média 6,85 s, p95
+  11,50 s, 100% JSON válido, média de 772 tokens de saída cobrados (quase tudo raciocínio: 1.439
+  de 1.500 numa chamada), US$ 2,995 por 1.000 avaliações ao preço atual
+  (`resultados/tabela_eficiencia.md`, `resultados/eficiencia/gemini_3_6_flash__api.jsonl`). O 2B
+  ajustado em CPU (5,96 s) teve latência média menor nessa amostra pequena. Ressalvas: n=10, rede,
+  nível gratuito; reduzir o raciocínio do Gemini mudaria latência e custo (não testado). Foram
+  gastas 10 das 20 requisições do dia.
+- **Demo com gramática** (teste local, GGUF Q4_K_M, 4 exemplos): mesmos rótulos e resumos com e
+  sem gramática; 1,5 a 1,7× mais lenta (ex.: 3,2 s → 5,5 s). A gramática não impõe `uniqueItems`.
+- **Cota:** o código antigo só detectava a cota diária por acaso (a regex capturava a mensagem
+  inteira do erro).
+
+### Observações (achados menores, não corrigidos)
+- `src/publicar.py` marca `rotulo_provisorio=False` para **todas** as linhas quando existe
+  `data/processed/rotulos_revisados.parquet`, inclusive linhas de treino que não foram revisadas.
+  Corrigir antes de `publicar.py --enviar` se a revisão do treino for parcial.
+- `kaggle/gerar_notebooks.py` gera ids de célula aleatórios a cada execução, o que produz ruído
+  no diff dos `.ipynb`.
+- As cópias de `src/` em `kaggle/dataset/` (fora do git) só são atualizadas ao rodar
+  `src/kaggle_dataset.py`; rode-o antes de enviar um novo kernel.
+
+### Limitações conhecidas e não resolvidas
+- **Falta o 2B sem ajuste com o prompt de rotulagem completo**, que separaria o efeito do prompt
+  do efeito do LoRA no próprio 2B. Experimento opcional (~1 a 1,5 h de CPU local); `src/inferir.py`
+  hoje só usa o prompt curto, então exige uma opção nova no script. Você optou por não rodar agora.
+- **Treino parcial:** só 1.200 das 3.150 avaliações de treino têm rótulo; rotular o resto custaria
+  um dia de cota e exigiria retreino.
+- **Um só seed de treino**; a variação entre treinos não é medida.
+- **Revisão com ancoragem**: uma subamostra revisada às cegas mediria o viés; não está prevista.
+- **Teste enriquecido em notas baixas**: agora há a coluna reponderada, mas a medida principal
+  continua sendo a do teste como está.
+
+### O que continua pendente
+- **Revisão humana** dos rótulos do teste: só você pode fazer. Até lá, a linha "Gemini vs.
+  humano" fica pendente e as comparações ficam infladas a favor do 2B ajustado.
+- **Baseline do Gemini com o prompt curto no teste inteiro**: não rodado (D21; 500 chamadas).
+- **Seções de resultado do artigo**: reescrever depois do `recalcular.py`.
+- **Conferir e fazer merge da branch `analise-conceitual`.**
+
+### Sua lista de tarefas
+1. Revisar `data/revisao/revisao_manual.csv` seguindo `data/revisao/COMO_REVISAR.md` (bloco
+   `teste` primeiro, inteiro, com `x` em `conferido`; se possível, pelo menos 50 linhas do
+   `treino_aleatorio`, que é o que a regra de retreino usa). Salvar como CSV UTF-8 separado por
+   vírgula.
+2. Rodar `python src/recalcular.py`. Ele valida a planilha, aplica as correções, mede Gemini ×
+   humano, refaz tabelas, ICs, o aviso de status e o README, e decide o retreino pela regra de
+   limiar (D40): "retreino recomendado" só com pelo menos 50 linhas conferidas no
+   `treino_aleatorio` e taxa de alteração de 10% ou mais; senão "retreino opcional" ou "amostra
+   insuficiente". Os comandos são impressos em todos os casos.
+3. Se ele recomendar retreino (ou se você quiser retreinar mesmo assim), rodar os comandos que
+   ele imprime, na ordem (começam por `src/kaggle_dataset.py`, que atualiza as cópias em
+   `kaggle/dataset/`, e terminam em `src/avaliar.py`; Kaggle, cerca de 20 min de treino mais a
+   fila). O TF-IDF acompanha os rótulos do novo treino.
+4. (Opcional) Experimento do 2B sem ajuste com o prompt de rotulagem completo: exige acrescentar
+   uma opção de prompt a `src/inferir.py`; ~1 a 1,5 h de CPU local.
+5. Reler README, `docs/artigo.md` e `ESTUDO.md`; reescrever as conclusões do artigo com a tabela
+   revisada (só afirmar que o 2B supera o 9B, com qualquer dos dois prompts, se o IC da
+   diferença, agora contra rótulos humanos, excluir zero).
+6. Conferir o diff da branch `analise-conceitual` (`git diff main...analise-conceitual`) e fazer merge em `main`.
+7. Antes de publicar, corrigir ou conferir a marcação `rotulo_provisorio` do `publicar.py`
+   (observação acima). Depois, `python src/publicar.py --enviar` com `HF_TOKEN` no `.env` (cria
+   os repositórios **privados** e envia GGUFs, adaptador, dataset e Space).
+8. Revisar no Hugging Face e tornar públicos os repositórios que quiser; idem GitHub e, se
+   quiser, os notebooks do Kaggle.
+
+## Estado final em 09/11/2026, 10:30: pronto para revisão (superado pelo bloco de 15/11)
 
 Todas as 16 etapas estão feitas ou documentadas. Falta só o que depende de você (lista no fim).
 Critérios conferidos às 10:30:
@@ -17,80 +136,11 @@ Critérios conferidos às 10:30:
 > do 2B ajustado está **inflada** (ele imita o estilo do Gemini; D34). Não leia como prova de que
 > ele supera o 9B antes de `python src/recalcular.py` rodar com os seus rótulos.
 
-### Qualidade no teste (`resultados/tabela_qualidade.md`)
-Teste: 500 avaliações; referência: rótulos **provisórios** do Gemini (revisão humana pendente).
-
-| Modelo | F1 macro | F1 macro IC 95% | F1 micro | F1 `atraso` | Acerto exato | Sentimento (acc / F1 macro) | JSON válido (%) | JSON no esquema (%) | Atraso real: cobertura (%) |
-|---|---|---|---|---|---|---|---|---|---|
-| TF-IDF + regressão logística | 0.683 | [0.645, 0.719] | 0.750 | 0.692 | 0.646 | 0.874 / 0.766 | 100.0 | 100.0 | 33.3 |
-| Qwen3.5-2B sem ajuste (Ollama q8_0) | 0.525 | [0.483, 0.563] | 0.617 | 0.382 | 0.442 | 0.896 / 0.745 | 100.0 | 98.0 | 72.2 |
-| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | 0.727 | [0.689, 0.761] | 0.789 | 0.566 | 0.682 | 0.922 / 0.855 | 100.0 | 100.0 | 54.2 |
-| Qwen3.5-2B + LoRA (este projeto) | 0.803 | [0.769, 0.838] | 0.856 | 0.811 | 0.782 | 0.912 / 0.803 | 100.0 | 100.0 | 38.9 |
-| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | 0.808 | [0.776, 0.841] | 0.859 | 0.819 | 0.786 | 0.912 / 0.797 | 100.0 | 100.0 | 37.5 |
-| Gemini (prompt de rotulagem, lotes de 100) vs. humano | pendente de revisão | — | — | — | — | — | — | — | — | — |
-
-Diferenças de F1 macro com IC de 95% (bootstrap pareado, 1000 reamostragens do teste com reposição, seed 42, percentis 2,5 e 97,5), medidas contra rótulos **provisórios do Gemini**, ou seja, diferença de concordância com o Gemini:
-
-- Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B sem ajuste (Ollama Q4_K_M): +0.076 [+0.042, +0.113]; primeiro maior em 100.0% das reamostragens
-- Qwen3.5-2B + LoRA (este projeto) − TF-IDF + regressão logística: +0.120 [+0.087, +0.158]; primeiro maior em 100.0% das reamostragens
-
-O intervalo cobre só a variação por amostragem das 500 avaliações do teste; não cobre erros dos rótulos de referência nem a variação entre treinos (um só seed).
-
-**Enquanto a referência for o Gemini, a vantagem do 2B ajustado está inflada**: ele foi treinado para imitar o estilo de rotulagem do Gemini, e esta tabela mede concordância com o Gemini. O 9B e o TF-IDF não tiveram esse benefício na mesma medida (o TF-IDF também foi treinado com rótulos do Gemini, mas com muito menos capacidade). Esta tabela **não** mostra que o 2B ajustado supera o 9B; isso só pode ser afirmado depois de `src/recalcular.py` rodar com os rótulos revisados por humano.
-
-A linha **Gemini (prompt de rotulagem, lotes de 100) vs. humano** fica pendente: antes da revisão, os rótulos de referência são os do próprio Gemini, e compará-los com eles mesmos daria F1 = 1,0 por definição. Ela é preenchida por `python src/recalcular.py` depois da revisão humana.
-
-Rótulos do Gemini no teste: 28 em lotes de 25, 472 em lotes de 100 (ver DECISOES.md D19).
-
-### F1 por categoria (`resultados/tabela_f1_categorias.md`)
-| Modelo | `atraso` | `nao_recebido` | `incompleto` | `produto_errado` | `defeito_qualidade` | `atendimento` | `elogio` | `outro` |
-|---|---|---|---|---|---|---|---|---|
-| TF-IDF + regressão logística | 0.69 | 0.77 | 0.72 | 0.71 | 0.65 | 0.66 | 0.93 | 0.33 |
-| Qwen3.5-2B sem ajuste (Ollama q8_0) | 0.38 | 0.71 | 0.33 | 0.59 | 0.76 | 0.26 | 0.90 | 0.27 |
-| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | 0.57 | 0.84 | 0.77 | 0.86 | 0.85 | 0.65 | 0.96 | 0.32 |
-| Qwen3.5-2B + LoRA (este projeto) | 0.81 | 0.89 | 0.82 | 0.85 | 0.85 | 0.74 | 0.96 | 0.50 |
-| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | 0.82 | 0.90 | 0.82 | 0.85 | 0.85 | 0.75 | 0.96 | 0.52 |
-| *suporte no teste* | 50 | 92 | 40 | 67 | 66 | 76 | 187 | 35 |
-
-### Eficiência (`resultados/tabela_eficiencia.md`)
-Hardware local: 12th Gen Intel(R) Core(TM) i5-1235U, 12 CPUs lógicas, 15Gi de RAM, sem GPU dedicada (só CPU).
-
-| Modelo | Onde | n | Latência média (s) | Latência p95 (s) | Tokens/s (geração) | JSON válido (%) | Custo por 1.000 avaliações |
-|---|---|---|---|---|---|---|---|
-| Qwen3.5-2B sem ajuste (q8_0) | Ollama local (CPU) | 100 | 7.21 | 10.02 | 10.9 | 100.0 | US$ 0 de API (hardware próprio) |
-| Qwen3.5-9B sem ajuste (Q4_K_M) | Ollama local (CPU) | 100 | 26.14 | 36.37 | 3.4 | 100.0 | US$ 0 de API (hardware próprio) |
-| Qwen3.5-2B + LoRA (q8_0) | Ollama local (CPU) | 100 | 5.96 | 7.27 | 11.2 | 100.0 | US$ 0 de API (hardware próprio) |
-| Qwen3.5-2B + LoRA (q8_0, format=esquema) | Ollama local (CPU) | 100 | 6.07 | 7.62 | 10.8 | 100.0 | US$ 0 de API (hardware próprio) |
-
-- Mesma amostra fixa de 100 avaliações do teste para os modelos locais (`resultados/ids_eficiencia.txt`), uma chamada por avaliação, sem paralelismo, temperatura 0, raciocínio desligado, num_ctx 2048, 1 chamada de aquecimento descartada.
-- Latência = tempo de parede da requisição HTTP ao Ollama local (inclui processar o prompt e gerar a resposta).
-- Modelos locais: custo marginal de API = 0; o custo real é o hardware/energia, que não estimamos.
-- Preço gemini-3.6-flash: US$ 0.75/1M tokens de entrada e US$ 3.75/1M de saída (https://aistudio.google.com/docs/pricing (redirecionado de ai.google.dev/gemini-api/docs/pricing), nível pago Standard, texto, consultado em 2026-11-08). Preço promocional válido até 31/12/2026; a partir de 01/01/2027 passa a US$ 1,50 (entrada) e US$ 7,50 (saída). A saída inclui tokens de raciocínio. Batch API: metade do preço. O nível gratuito não cobra, mas é limitado a 20 requisições/dia.
-
-### Concordância Gemini × Qwen3.5-9B (`resultados/tabela_concordancia.md`)
-Mesmo prompt de rotulagem; mede a ambiguidade de cada categoria, não quem está certo.
-
-| Recorte | n | Sentimento (% / κ) | `atraso` (% / κ) | `nao_recebido` (% / κ) | `incompleto` (% / κ) | `produto_errado` (% / κ) | `defeito_qualidade` (% / κ) | `atendimento` (% / κ) | `elogio` (% / κ) | `outro` (% / κ) | Conjunto idêntico (%) |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| teste | 499 | 94 / 0.90 | 92 / 0.68 | 97 / 0.89 | 99 / 0.91 | 98 / 0.90 | 96 / 0.82 | 92 / 0.70 | 99 / 0.97 | 94 / 0.50 | 79.0 |
-| treino | 378 | 94 / 0.89 | 95 / 0.81 | 98 / 0.92 | 97 / 0.87 | 97 / 0.80 | 97 / 0.88 | 94 / 0.75 | 98 / 0.95 | 94 / 0.60 | 79.4 |
-
-### Checagem de atraso pelas datas (`resultados/tabela_checagem_atraso.md`)
-| Fonte | Recorte | n (atraso conhecido) | Atrasados reais | `atraso`: atrasados marcados | `atraso`: marcados que atrasaram | `atraso` ou `nao_recebido`: atrasados marcados | `atraso` ou `nao_recebido`: marcados que atrasaram | κ (`atraso`) |
-|---|---|---|---|---|---|---|---|---|
-| Gemini (rótulos) | todas | 1881 | 294 (15.6%) | 125/294 (42.5%) | 125/182 (68.7%) | 232/294 (78.9%) | 232/348 (66.7%) | 0.46 |
-| Gemini (rótulos) | teste | 456 | 72 (15.8%) | 24/72 (33.3%) | 24/38 (63.2%) | 57/72 (79.2%) | 57/86 (66.3%) | 0.37 |
-| Qwen3.5-9B (rótulos) | todas | 1372 | 223 (16.3%) | 110/223 (49.3%) | 110/187 (58.8%) | 173/223 (77.6%) | 173/289 (59.9%) | 0.46 |
-| Qwen3.5-9B (rótulos) | teste | 456 | 72 (15.8%) | 35/72 (48.6%) | 35/62 (56.5%) | 58/72 (80.6%) | 58/93 (62.4%) | 0.44 |
-| TF-IDF + regressão logística | teste | 456 | 72 (15.8%) | 24/72 (33.3%) | 24/39 (61.5%) | 52/72 (72.2%) | 52/100 (52.0%) | 0.36 |
-| Qwen3.5-2B sem ajuste (Ollama q8_0) | teste | 456 | 72 (15.8%) | 52/72 (72.2%) | 52/166 (31.3%) | 60/72 (83.3%) | 60/176 (34.1%) | 0.28 |
-| Qwen3.5-9B sem ajuste (Ollama Q4_K_M) | teste | 456 | 72 (15.8%) | 39/72 (54.2%) | 39/87 (44.8%) | 61/72 (84.7%) | 61/121 (50.4%) | 0.38 |
-| Qwen3.5-2B + LoRA (este projeto) | teste | 456 | 72 (15.8%) | 28/72 (38.9%) | 28/41 (68.3%) | 58/72 (80.6%) | 58/84 (69.0%) | 0.43 |
-| Qwen3.5-2B + LoRA, GGUF q8_0 no Ollama | teste | 456 | 72 (15.8%) | 27/72 (37.5%) | 27/40 (67.5%) | 57/72 (79.2%) | 57/83 (68.7%) | 0.42 |
-
-"Atrasados marcados" = dos pedidos que atrasaram pelas datas, quantos o rótulo marca (cobertura). "Marcados que atrasaram" = das avaliações com o rótulo, quantas tiveram atraso pelas datas (precisão).
-
-No teste, 62 dos 72 pedidos atrasados pelas datas foram avaliados **antes** de serem entregues (`resultados/avaliacao_antes_da_entrega.json`, gerado por `src/datas_avaliacao.py`). Nesses casos o cliente escreve "não recebi", e o rótulo esperado é `nao_recebido` (com `atraso` só se ele disser que o prazo passou). Por isso a cobertura de `atraso` sozinho é baixa para todos os modelos, e a coluna `atraso` ou `nao_recebido` é a comparação mais justa.
+### Tabelas
+As tabelas que ficavam copiadas aqui (qualidade, F1 por categoria, eficiência, concordância e
+checagem de atraso) foram substituídas por remissão em 15/11, para não divergirem dos arquivos
+gerados: ver `resultados/tabela_*.md` e o README. Os números de 09/11 não mudaram; em 15/11
+entraram linhas e tabelas novas (ver o bloco de 15/11 acima).
 
 ### O que está pronto
 - Dados: 4.000 avaliações (treino 3.150 / validação 350 / teste 500); 2.050 rotuladas pelo Gemini

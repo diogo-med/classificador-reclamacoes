@@ -5,6 +5,9 @@ Convenções:
 - uma resposta inválida (JSON quebrado) tem categorias [] e sentimento None,
   e conta como erro (nenhuma categoria prevista, sentimento errado).
 """
+import re
+import unicodedata
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import (accuracy_score, cohen_kappa_score, confusion_matrix,
@@ -24,23 +27,37 @@ def binarizar(listas, categorias=CATEGORIAS) -> np.ndarray:
     return m
 
 
-def metricas_categorias(verdade, previsto, categorias=CATEGORIAS) -> dict:
-    """F1 binário por categoria, F1 macro e micro, acerto exato e matriz 2x2 por categoria."""
+def metricas_categorias(verdade, previsto, categorias=CATEGORIAS, sample_weight=None) -> dict:
+    """F1 binário por categoria, F1 macro e micro, acerto exato e matriz 2x2 por categoria.
+
+    sample_weight (opcional): peso por avaliação. Com peso, os F1 são os ponderados do sklearn
+    (macro = média dos F1 binários ponderados), o acerto exato é a média ponderada e "matriz" e
+    "suporte" viram somas de pesos (float). Sem peso, tudo é contagem (int), como antes."""
     y, p = binarizar(verdade, categorias), binarizar(previsto, categorias)
+    w = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
+    num = int if w is None else float
     por_cat = {}
     for i, c in enumerate(categorias):
-        tn, fp, fn, tp = confusion_matrix(y[:, i], p[:, i], labels=[0, 1]).ravel()
+        tn, fp, fn, tp = confusion_matrix(y[:, i], p[:, i], labels=[0, 1], sample_weight=w).ravel()
         por_cat[c] = {
-            "f1": float(f1_score(y[:, i], p[:, i], zero_division=0)),
-            "suporte": int(y[:, i].sum()),
-            "matriz": {"vp": int(tp), "fp": int(fp), "fn": int(fn), "vn": int(tn)},
+            "f1": float(f1_score(y[:, i], p[:, i], zero_division=0, sample_weight=w)),
+            "suporte": num(y[:, i].sum() if w is None else (w * y[:, i]).sum()),
+            "matriz": {"vp": num(tp), "fp": num(fp), "fn": num(fn), "vn": num(tn)},
         }
     return {
-        "f1_macro": float(f1_score(y, p, average="macro", zero_division=0)),
-        "f1_micro": float(f1_score(y, p, average="micro", zero_division=0)),
-        "acerto_exato": float((y == p).all(axis=1).mean()),
+        "f1_macro": float(f1_score(y, p, average="macro", zero_division=0, sample_weight=w)),
+        "f1_micro": float(f1_score(y, p, average="micro", zero_division=0, sample_weight=w)),
+        "acerto_exato": float(np.average((y == p).all(axis=1), weights=w)),
         "por_categoria": por_cat,
     }
+
+
+def normalizar_texto(texto) -> str:
+    """Minúsculas, sem acentos, tudo que não é [a-z0-9] vira espaço, espaços colapsados.
+    Usado para achar textos repetidos entre treino e teste ("Muito bom!" == "muito bom")."""
+    t = unicodedata.normalize("NFKD", "" if pd.isna(texto) else str(texto).lower())
+    t = "".join(ch for ch in t if not unicodedata.combining(ch))
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", t).split())
 
 
 def metricas_sentimento(verdade, previsto) -> dict:

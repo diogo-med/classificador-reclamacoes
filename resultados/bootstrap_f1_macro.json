@@ -25,6 +25,13 @@
         0.760702056111365
       ]
     },
+    "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+      "f1_macro": 0.8190833904981024,
+      "ic95": [
+        0.7844969720011666,
+        0.8506491932030589
+      ]
+    },
     "Qwen3.5-2B + LoRA (este projeto)": {
       "f1_macro": 0.803416290267899,
       "ic95": [
@@ -56,6 +63,14 @@
         0.15812257882964362
       ],
       "fracao_reamostras_a_maior": 1.0
+    },
+    "Qwen3.5-2B + LoRA (este projeto) − Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)": {
+      "diferenca_f1_macro": -0.015667100230203457,
+      "ic95": [
+        -0.046133202673686875,
+        0.016402580199998112
+      ],
+      "fracao_reamostras_a_maior": 0.166
     }
   },
   "referencia": "provisoria_gemini"

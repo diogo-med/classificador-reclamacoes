@@ -127,6 +127,7 @@ def gerar(textos, lote=16):
 
 resultados = {"modelo_base": MODELO_BASE, "epocas": EPOCAS, "lr": LR, "r": R, "alpha": ALPHA,
               "tempo_treino_min": tempo_treino / 60, "melhor_checkpoint": trainer.state.best_model_checkpoint,
+              "arquivo_rotulos": arq_rotulos.name,  # rotulos_gemini.parquet ou rotulos_revisados.parquet
               "n_treino": len(treino), "n_validacao": len(valid), "bf16": bf16,
               "gpu": torch.cuda.get_device_name(0)}
 from importlib.metadata import version

@@ -14,5 +14,9 @@
   "Qwen3.5-2B + LoRA (q8_0, format=esquema)": {
     "arquivo": "qwen3_5_2b___lora__q8_0__format_esquema.jsonl",
     "onde": "Ollama local (CPU)"
+  },
+  "Gemini 3.6 Flash (API)": {
+    "arquivo": "gemini_3_6_flash__api.jsonl",
+    "onde": "API (rede)"
   }
 }

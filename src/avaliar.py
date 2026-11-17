@@ -8,8 +8,11 @@ Entradas (todas no git):
 - data/processed/rotulos_9b.parquet ......... segundo rotulador
 - resultados/predicoes/*.jsonl .............. respostas cruas de cada modelo no teste
 - resultados/eficiencia.json ................ medições de latência (src/eficiencia.py)
+- resultados/estatisticas_dados.json ........ distribuição de notas da população (sensibilidade)
+- resultados/treino/qwen2b_lora/resultados_qwen2b_lora.json  rótulos usados no treino do LoRA
+                                               (`arquivo_rotulos`; o TF-IDF treina com os mesmos)
 
-Saídas: resultados/metricas.json, tabelas em Markdown, checagem de atraso,
+Saídas: resultados/metricas.json, tabelas em Markdown (inclusive a de sensibilidade), checagem de atraso,
 concordância Gemini x 9B, matriz de confusão e as tabelas do README.
 
 Uso: python src/avaliar.py
@@ -33,7 +36,7 @@ from config import CATEGORIAS, DATA_PROCESSED, RAIZ, RESULTADOS, SEED  # noqa: E
 from esquema import avaliar_resposta  # noqa: E402
 from metricas import (binarizar, bootstrap_f1_macro, checagem_atraso,  # noqa: E402
                       concordancia, metricas_categorias, metricas_formato,
-                      metricas_sentimento)
+                      metricas_sentimento, normalizar_texto)
 
 PREDICOES = RESULTADOS / "predicoes"
 
@@ -52,15 +55,28 @@ MODELOS = {
 LINHA_GEMINI = "Gemini (prompt de rotulagem, lotes de 100) vs. humano"
 PRINCIPAL = "Qwen3.5-2B + LoRA (este projeto)"
 NOVE_B = "Qwen3.5-9B sem ajuste (Ollama Q4_K_M)"
+# O mesmo 9B com o prompt de rotulagem (os rótulos de data/processed/rotulos_9b.parquet no teste).
+NOVE_B_FEWSHOT = "Qwen3.5-9B (prompt de rotulagem, few-shot, lotes de 25)"
 TFIDF = "TF-IDF + regressão logística"
 N_BOOTSTRAP = 1000
+# Rótulos com que o LoRA foi treinado (o notebook grava `arquivo_rotulos`; ausência = Gemini).
+RESULTADOS_LORA = RESULTADOS / "treino" / "qwen2b_lora" / "resultados_qwen2b_lora.json"
+ROTULOS_TREINO_PADRAO = "rotulos_gemini.parquet"
 # Aviso obrigatório enquanto a referência for o Gemini (ver README, "Leitura dos resultados").
 NOTA_INFLADA = ("**Enquanto a referência for o Gemini, a vantagem do 2B ajustado está inflada**: ele foi "
                 "treinado para imitar o estilo de rotulagem do Gemini, e esta tabela mede concordância com o "
-                "Gemini. O 9B e o TF-IDF não tiveram esse benefício na mesma medida (o TF-IDF também foi "
+                "Gemini. O 9B e o TF-IDF não tiveram esse benefício na mesma medida (o 9B da linha † recebe "
+                "as mesmas definições e exemplos que o Gemini, mas não aprendeu o estilo dele; o TF-IDF foi "
                 "treinado com rótulos do Gemini, mas com muito menos capacidade). Esta tabela **não** mostra "
                 "que o 2B ajustado supera o 9B; isso só pode ser afirmado depois de `src/recalcular.py` "
                 "rodar com os rótulos revisados por humano.")
+NOTA_FEWSHOT = ("† Os baselines \"sem ajuste\" recebem o prompt curto (`prompt_baseline`), que só lista os nomes "
+                "das categorias, sem definições. A linha † é o mesmo Qwen3.5-9B com o prompt de rotulagem "
+                "completo (definições + 10 exemplos), em lotes de 25, com decodificação restrita ao esquema JSON "
+                "(por isso as colunas de JSON não são comparáveis com as outras linhas) e rodado na GPU do Kaggle "
+                "(latência não medida na CPU local). Rotulou {presentes} das {n} avaliações do teste{faltam}. "
+                "A diferença entre as duas linhas do 9B é efeito de prompt; a "
+                "comparação 2B ajustado − 9B few-shot está na lista de diferenças.")
 NOTA_FAVORECIDA = ("favorecida por construção enquanto os rótulos do teste não forem revisados "
                    "(os rótulos provisórios vêm do próprio Gemini)")
 
@@ -81,6 +97,25 @@ def rotulos_referencia() -> tuple[pd.DataFrame, bool]:
     if revisados is not None:
         return revisados, True
     return ler_rotulos("rotulos_gemini"), False
+
+
+def arquivo_rotulos_treino(resultados_lora: dict | None) -> str:
+    """Arquivo de rótulos com que o LoRA foi treinado (o TF-IDF usa o mesmo). Sem a chave = Gemini."""
+    if (resultados_lora or {}).get("arquivo_rotulos") == "rotulos_revisados.parquet":
+        return "rotulos_revisados.parquet"
+    return ROTULOS_TREINO_PADRAO
+
+
+def ler_resultados_lora() -> dict | None:
+    if not RESULTADOS_LORA.exists():
+        return None
+    return json.loads(RESULTADOS_LORA.read_text(encoding="utf-8"))
+
+
+def predicoes_rotulos(rotulos: pd.DataFrame) -> pd.DataFrame:
+    """Rótulos de um rotulador no formato de previsões (válidos e no esquema por construção)."""
+    return rotulos.assign(json_valido=True, no_esquema=True)[["review_id", "json_valido", "no_esquema",
+                                                              "sentimento", "categorias"]]
 
 
 def ler_predicoes(arquivo: str) -> pd.DataFrame | None:
@@ -183,9 +218,16 @@ def texto_diferencas(boot: dict | None, revisado: bool = False) -> str:
     for par, d in boot["diferencas"].items():
         linhas.append(f"- {par}: {d['diferenca_f1_macro']:+.3f} [{d['ic95'][0]:+.3f}, {d['ic95'][1]:+.3f}]; "
                       f"primeiro maior em {100 * d['fracao_reamostras_a_maior']:.1f}% das reamostragens")
-    linhas.append("\nO intervalo cobre só a variação por amostragem das 500 avaliações do teste; não cobre erros "
+    linhas.append(f"\nO intervalo cobre só a variação por amostragem das {boot['n']} avaliações do teste; não cobre erros "
                   "dos rótulos de referência nem a variação entre treinos (um só seed).")
     return "\n".join(linhas) + "\n"
+
+
+def nota_fewshot(r: dict) -> str:
+    falta = r["sem_previsao"]
+    faltam = ("" if not falta else "; a que falta conta como sem previsão" if falta == 1
+              else f"; as {falta} que faltam contam como sem previsão")
+    return NOTA_FEWSHOT.format(presentes=r["n"] - falta, n=r["n"], faltam=faltam)
 
 
 def tabela_qualidade(res: dict, revisado: bool, boot: dict | None = None) -> str:
@@ -199,6 +241,7 @@ def tabela_qualidade(res: dict, revisado: bool, boot: dict | None = None) -> str
             continue
         c, s = r["categorias"], r["sentimento"]
         marca = " ⚠️" if r.get("observacao") == "favorecida" and not revisado else ""
+        marca += " †" if nome == NOVE_B_FEWSHOT else ""
         linhas.append(
             f"| {nome}{marca} | {fmt(c['f1_macro'])} | {ic(boot, nome)} | {fmt(c['f1_micro'])} | "
             f"{fmt(c['por_categoria']['atraso']['f1'])} | {fmt(c['acerto_exato'])} | "
@@ -207,6 +250,8 @@ def tabela_qualidade(res: dict, revisado: bool, boot: dict | None = None) -> str
             f"{r['checagem_atraso']['atraso']['cobertura_dos_atrasados_pct']:.1f} |")
     favorecida = any(r.get("observacao") == "favorecida" for r in res.values())
     nota = texto_diferencas(boot, revisado)
+    if NOVE_B_FEWSHOT in res:
+        nota += f"\n{nota_fewshot(res[NOVE_B_FEWSHOT])}\n"
     if not revisado:
         nota += f"\n{NOTA_INFLADA}\n"
     nota += f"\n⚠️ Linha {NOTA_FAVORECIDA}.\n" if favorecida and not revisado else ""
@@ -229,6 +274,84 @@ def tabela_f1_por_categoria(res: dict) -> str:
     suporte = next(iter(res.values()))["categorias"]["por_categoria"]
     linhas.append("| *suporte no teste* | " + " | ".join(str(suporte[c]["suporte"]) for c in CATEGORIAS) + " |")
     return cab + "\n".join(linhas) + "\n"
+
+
+def mascara_nao_vistos(textos_teste, textos_vistos) -> np.ndarray:
+    """True para textos do teste cujo texto normalizado não aparece em `textos_vistos`."""
+    vistos = {normalizar_texto(t) for t in textos_vistos}
+    return np.array([normalizar_texto(t) not in vistos for t in textos_teste], dtype=bool)
+
+
+def pesos_por_nota(notas, distribuicao: dict) -> np.ndarray:
+    """Peso = fração da nota na população / fração da nota nas `notas` (reponderação)."""
+    notas = pd.Series(list(notas)).astype(int)
+    pop = pd.Series({int(k): float(v) for k, v in distribuicao.items()})
+    pop = pop / pop.sum()
+    amostra = notas.value_counts(normalize=True)
+    return (notas.map(pop) / notas.map(amostra)).to_numpy(dtype=float)
+
+
+def sensibilidade(teste: pd.DataFrame, previstas: dict, textos_vistos, distribuicao: dict | None) -> dict:
+    """F1 macro de cada modelo no teste completo, sem textos vistos no treino e reponderado por nota."""
+    verdade = teste["categorias"].tolist()
+    ok = mascara_nao_vistos(teste["texto"], textos_vistos)
+    pesos = None if distribuicao is None else pesos_por_nota(teste["nota"], distribuicao)
+    modelos = {}
+    for nome, prev in previstas.items():
+        r = {"completo": metricas_categorias(verdade, prev)["f1_macro"],
+             "nao_vistos": metricas_categorias([v for v, k in zip(verdade, ok) if k],
+                                               [p for p, k in zip(prev, ok) if k])["f1_macro"]}
+        if pesos is not None:
+            r["reponderado"] = metricas_categorias(verdade, prev, sample_weight=pesos)["f1_macro"]
+        modelos[nome] = r
+    peso_nota = ({} if pesos is None else
+                 {str(n): float(w) for n, w in sorted(set(zip(teste["nota"].astype(int), pesos)))})
+    saida = {"n_completo": int(len(teste)), "n_nao_vistos": int(ok.sum()), "excluidas_vistas": int((~ok).sum()),
+             "peso_por_nota": peso_nota, "modelos": modelos}
+    if distribuicao is not None:
+        pop = {int(k): float(v) for k, v in distribuicao.items()}
+        saida["fracao_notas_1a3"] = {"teste": float(teste["nota"].astype(int).le(3).mean()),
+                                     "populacao": sum(v for k, v in pop.items() if k <= 3) / sum(pop.values())}
+    return saida
+
+
+def tabela_sensibilidade(sens: dict) -> str:
+    rep = bool(sens["peso_por_nota"])
+    cab = (f"| Modelo | F1 macro: teste completo (n={sens['n_completo']}) | F1 macro: sem textos vistos no treino "
+           f"(n={sens['n_nao_vistos']}) |" + (f" F1 macro: reponderado por nota (n={sens['n_completo']}) |" if rep else "")
+           + "\n|---|---|---|" + ("---|" if rep else "") + "\n")
+    linhas = [f"| {nome}{' †' if nome == NOVE_B_FEWSHOT else ''} | {fmt(r['completo'])} | {fmt(r['nao_vistos'])} |"
+              + (f" {fmt(r['reponderado'])} |" if rep else "") for nome, r in sens["modelos"].items()]
+    pesos = ", ".join(f"nota {n}: {w:.2f}" for n, w in sens["peso_por_nota"].items())
+    nota = (f"\n- **Teste completo**: o mesmo F1 macro da tabela de qualidade.\n"
+            f"- **Sem textos vistos no treino**: exclui as {sens['excluidas_vistas']} avaliações do teste cujo texto "
+            "normalizado (minúsculas, sem acentos e pontuação) é idêntico ao de alguma avaliação do treino rotulado "
+            "(as que entram no treino do LoRA e do TF-IDF). Textos curtos repetidos, como \"muito bom\", aparecem no "
+            "treino e no teste e favorecem os modelos treinados.\n")
+    if rep:
+        f13 = sens["fracao_notas_1a3"]
+        nota += (f"- **Reponderado por nota**: o teste tem {100 * f13['teste']:.0f}% de notas 1-3, contra "
+                 f"{100 * f13['populacao']:.0f}% na população com texto (amostragem com peso maior nas notas "
+                 "baixas, D08); cada avaliação pesa (fração da nota na população) / (fração da nota no teste), "
+                 f"ou seja, {pesos}. Aproxima o F1 macro na distribuição real de notas.\n")
+    return cab + "\n".join(linhas) + "\n" + nota
+
+
+def texto_status(revisado: bool) -> str:
+    """Aviso do topo do README sobre a referência."""
+    if not revisado:
+        return ("> ⚠️ **Rótulos provisórios.** Todos os rótulos (treino e teste) foram gerados pelo Gemini e a\n"
+                "> revisão humana do teste ainda **não foi feita**. As tabelas abaixo medem quanto cada modelo\n"
+                "> concorda com o Gemini, não com um humano. Elas são regeneradas por `python src/recalcular.py`\n"
+                "> depois da revisão.\n")
+    caminho = RESULTADOS / "revisao_humana.json"
+    rev = json.loads(caminho.read_text(encoding="utf-8")) if caminho.exists() else {}
+    n = rev.get("conferidas_por_bloco", {}).get("teste", {}).get("conferidas")
+    conferidas = f" ({n} linhas do teste conferidas)" if n is not None else ""
+    return ("> **Rótulos do teste revisados por humano.** A referência do teste são os rótulos do Gemini\n"
+            f"> conferidos e corrigidos à mão{conferidas}; ver \"Revisão humana\" abaixo.\n"
+            "> A revisão foi feita vendo o rótulo sugerido (**viés de ancoragem**: a concordância com o\n"
+            "> Gemini tende a sair superestimada).\n")
 
 
 def tabela_eficiencia() -> str:
@@ -289,28 +412,37 @@ def main():
              "n_rotulados_por_split": dados["split"].value_counts().to_dict(),
              "modelos": {}}
 
-    # TF-IDF (treinado aqui mesmo)
-    tfidf = treinar_tfidf(dados[dados["split"] == "treino"], dados[dados["split"] == "validacao"])
+    # TF-IDF (treinado aqui mesmo) com os mesmos rótulos de treino do LoRA; avaliado contra a referência
+    arquivo_treino = arquivo_rotulos_treino(ler_resultados_lora())
+    rot_treino = ler_rotulos(arquivo_treino.removesuffix(".parquet"))
+    if rot_treino is None:
+        sys.exit(f"O LoRA foi treinado com {arquivo_treino}, mas o arquivo não existe em {DATA_PROCESSED}.")
+    dados_treino = amostra.merge(rot_treino[["review_id", "sentimento", "categorias"]], on="review_id")
+    tfidf = treinar_tfidf(dados_treino[dados_treino["split"] == "treino"],
+                          dados_treino[dados_treino["split"] == "validacao"])
     res = {TFIDF: avaliar_modelo(predicoes_tfidf(tfidf, teste), teste)}
-    res[TFIDF]["hiperparametros"] = {"C": tfidf["C"], "f1_macro_validacao": tfidf["f1_macro_validacao"]}
+    res[TFIDF]["hiperparametros"] = {"C": tfidf["C"], "f1_macro_validacao": tfidf["f1_macro_validacao"],
+                                     "rotulos_treino": arquivo_treino}
+    r9 = ler_rotulos("rotulos_9b")
     for nome, (arquivo, obs) in MODELOS.items():
         pred = ler_predicoes(arquivo)
         if pred is None:
             print(f"(sem previsões para {nome}: {arquivo})")
-            continue
-        res[nome] = avaliar_modelo(pred, teste)
-        res[nome]["observacao"] = obs
+        else:
+            res[nome] = avaliar_modelo(pred, teste)
+            res[nome]["observacao"] = obs
+        if nome == NOVE_B and r9 is not None:  # mesmo 9B, prompt de rotulagem (só os do teste)
+            res[NOVE_B_FEWSHOT] = avaliar_modelo(predicoes_rotulos(r9[r9["review_id"].isin(teste["review_id"])]), teste)
+            res[NOVE_B_FEWSHOT]["observacao"] = "prompt_rotulagem"
     # Linha do professor (Gemini, prompt de rotulagem) — só depois da revisão humana
     if revisado:
-        g = gemini.assign(json_valido=True, no_esquema=True)[["review_id", "json_valido", "no_esquema",
-                                                               "sentimento", "categorias"]]
-        res[LINHA_GEMINI] = avaliar_modelo(g, teste)
+        res[LINHA_GEMINI] = avaliar_modelo(predicoes_rotulos(gemini), teste)
     else:
         res[LINHA_GEMINI] = {"pendente_de_revisao": True}
 
     # Intervalos de confiança por bootstrap pareado (mesmas reamostragens para todos os modelos)
     previstas = {nome: r.pop("_categorias_previstas") for nome, r in res.items() if "_categorias_previstas" in r}
-    pares = [(PRINCIPAL, NOVE_B), (PRINCIPAL, TFIDF)]
+    pares = [(PRINCIPAL, NOVE_B), (PRINCIPAL, TFIDF), (PRINCIPAL, NOVE_B_FEWSHOT)]
     if revisado:
         pares.append((PRINCIPAL, LINHA_GEMINI))
     boot = bootstrap_f1_macro(teste["categorias"].tolist(), previstas, pares=pares,
@@ -320,21 +452,28 @@ def main():
     (RESULTADOS / "bootstrap_f1_macro.json").write_text(json.dumps(boot, ensure_ascii=False, indent=2))
     saida["modelos"] = res
 
+    # Sensibilidade do F1 macro: textos repetidos entre treino e teste e distribuição de notas
+    estat = RESULTADOS / "estatisticas_dados.json"
+    distribuicao = (json.loads(estat.read_text(encoding="utf-8")).get("distribuicao_nota_com_texto")
+                    if estat.exists() else None)
+    sens = sensibilidade(teste, previstas, dados_treino.loc[dados_treino["split"] == "treino", "texto"],
+                         distribuicao)
+    saida["sensibilidade"] = sens
+
     # Etapa 8: checagem independente dos rotuladores (em todas as avaliações com rótulo)
     checagem = {}
-    for nome, rot in [("Gemini (rótulos)", gemini), ("Qwen3.5-9B (rótulos)", ler_rotulos("rotulos_9b"))]:
+    for nome, rot in [("Gemini (rótulos)", gemini), ("Qwen3.5-9B (rótulos)", r9)]:
         if rot is None:
             continue
         m = amostra.merge(rot, on="review_id")
         checagem[nome] = {s: checagem_atraso(g["atraso_real"], g["categorias"])
                           for s, g in [("todas", m), ("teste", m[m["split"] == "teste"])]}
     for nome, r in res.items():
-        if "checagem_atraso" in r:
+        if "checagem_atraso" in r and nome != NOVE_B_FEWSHOT:  # já está acima como "Qwen3.5-9B (rótulos)"
             checagem[nome] = {"teste": r["checagem_atraso"]}
     saida["checagem_atraso"] = checagem
 
     # Etapa 6: concordância Gemini x 9B (mede ambiguidade; não usada para mudar nada)
-    r9 = ler_rotulos("rotulos_9b")
     if r9 is not None:
         sp = amostra.set_index("review_id")["split"]
         saida["concordancia_gemini_9b"] = {
@@ -350,15 +489,17 @@ def main():
     te = tabela_eficiencia()
     tca = tabela_concordancia(saida.get("concordancia_gemini_9b"))
     tat = tabela_checagem(checagem)
+    ts = tabela_sensibilidade(sens)
     for nome, conteudo in [("tabela_qualidade.md", tq), ("tabela_f1_categorias.md", tc),
                            ("tabela_eficiencia.md", te), ("tabela_concordancia.md", tca),
-                           ("tabela_checagem_atraso.md", tat)]:
+                           ("tabela_checagem_atraso.md", tat), ("tabela_sensibilidade.md", ts)]:
         (RESULTADOS / nome).write_text(conteudo, encoding="utf-8")
     alvo = PRINCIPAL if PRINCIPAL in res else [k for k, v in res.items() if "categorias" in v][-1]
     grafico_matrizes(res, alvo, RESULTADOS / "matriz_confusao.png")
     (RESULTADOS / "tabela_revisao.md").write_text(tabela_revisao(), encoding="utf-8")
-    atualizar_readme({"revisao": tabela_revisao(), "qualidade": tq, "f1_categorias": tc, "eficiencia": te,
-                      "concordancia": tca, "checagem": tat})
+    atualizar_readme({"status": texto_status(revisado), "revisao": tabela_revisao(), "qualidade": tq,
+                      "f1_categorias": tc, "sensibilidade": ts, "eficiencia": te, "concordancia": tca,
+                      "checagem": tat})
     print(tq)
     print(te)
 

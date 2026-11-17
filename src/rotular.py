@@ -78,36 +78,98 @@ def _cliente_gemini():
     return genai.Client(http_options=types.HttpOptions(timeout=180_000))
 
 
-def chamar_gemini(cliente, prompt: str, esquema: dict, modelo: str = MODELO_GEMINI):
-    """Uma chamada com retentativa para 429/5xx. Retorna (texto, versao_modelo, segundos)."""
-    from google.genai import errors, types
-    config = types.GenerateContentConfig(
-        temperature=0, response_mime_type="application/json",
-        response_json_schema=esquema)
+ESPERA_MAX_429 = 3600  # 429 pedindo para esperar mais que isso = cota diária, não vale esperar
+
+
+def _diaria(cota: str) -> bool:
+    c = cota.lower().replace("_", "").replace(" ", "")
+    return "perday" in c
+
+
+def analisar_429(e) -> tuple[bool, float | None, str]:
+    """Lê um erro 429 da API. Retorna (cota diária?, espera sugerida em s ou None, descrição).
+
+    Usa os detalhes estruturados (QuotaFailure.quotaId, RetryInfo.retryDelay) e, na falta
+    deles, o texto do erro. Diária = todas as cotas estouradas são por dia."""
+    msg = str(e)
+    det = getattr(e, "details", None)
+    erro = det.get("error", det) if isinstance(det, dict) else {}
+    erro = erro if isinstance(erro, dict) else {}
+    cotas, atraso = [], None
+    for d in erro.get("details") or []:
+        if not isinstance(d, dict):
+            continue
+        tipo = str(d.get("@type", ""))
+        if tipo.endswith("QuotaFailure"):
+            cotas += [v.get("quotaId") or v.get("quotaMetric") or v.get("description") or ""
+                      for v in d.get("violations") or [] if isinstance(v, dict)]
+        elif tipo.endswith("RetryInfo"):
+            m = re.match(r"([\d.]+)s$", str(d.get("retryDelay", "")))
+            atraso = float(m.group(1)) if m else atraso
+    if not cotas:
+        cotas = re.findall(r"'quotaId': '([^']+)'", msg) or [
+            m.split("\\n")[0].strip() for m in re.findall(r"Quota exceeded for metric: ([^\n*]+)", msg)]
+    if atraso is None:
+        m = re.search(r"retry in ([\d.]+)s|'retryDelay': '(\d+)s'", msg)
+        atraso = float(m.group(1) or m.group(2)) if m else None
+    diaria = bool(cotas) and all(_diaria(c) for c in cotas)
+    if not cotas and re.search(r"per day", msg, re.IGNORECASE):
+        diaria = True
+    if atraso is not None and atraso > ESPERA_MAX_429:
+        diaria = True
+    desc = "; ".join(cotas) if cotas else msg[:200]
+    if atraso is not None:
+        desc += f" (espera sugerida {atraso:.0f}s)"
+    return diaria, atraso, desc
+
+
+def chamar_com_retentativa(chamada, tentativas: int = 8):
+    """Executa chamada() (uma requisição ao Gemini) com nova tentativa para 429 por minuto e 5xx.
+
+    429 de cota diária -> CotaDiariaEsgotada (não adianta esperar). Espera inicial de 10 s,
+    dobrando até 300 s (8 tentativas ~ 20 min). Retorna (resposta, segundos da tentativa que deu certo)."""
+    from google.genai import errors
     espera = 10
-    for tentativa in range(8):
+    for tentativa in range(tentativas):
         inicio = time.time()
         try:
-            r = cliente.models.generate_content(model=modelo, contents=prompt, config=config)
-            return r.text, r.model_version, time.time() - inicio
+            return chamada(), time.time() - inicio
         except errors.APIError as e:
-            msg = str(e)
             if e.code == 429:
-                metricas = re.findall(r"Quota exceeded for metric: ([^\n*]+)", msg)
-                print(f"  429: {metricas or msg[:200]}", flush=True)
-                # só para se a métrica estourada for diária; limite por minuto -> espera
-                if metricas and all("PerDay" in m or "per_day" in m.lower() for m in metricas):
-                    raise CotaDiariaEsgotada("; ".join(metricas)) from e
-                m = re.search(r"retry in ([\d.]+)s|'retryDelay': '(\d+)s'", msg)
-                atraso = float(m.group(1) or m.group(2)) + 2 if m else espera
-            elif e.code in (500, 502, 503, 504):
+                diaria, sugerida, desc = analisar_429(e)
+                print(f"  429: {desc}", flush=True)
+                if diaria:
+                    raise CotaDiariaEsgotada(desc) from e
+                atraso = sugerida + 2 if sugerida is not None else espera
+            elif e.code is not None and 500 <= e.code < 600:
                 atraso = espera
             else:
                 raise
             print(f"  erro {e.code}, aguardando {atraso:.0f}s (tentativa {tentativa + 1})", flush=True)
             time.sleep(atraso)
             espera = min(espera * 2, 300)
-    raise RuntimeError("Falhou depois de 8 tentativas")
+    raise RuntimeError(f"Falhou depois de {tentativas} tentativas")
+
+
+def uso_gemini(r) -> dict:
+    """Tokens de uso da resposta. eval_count = resposta + raciocínio (tudo cobrado como saída)."""
+    u = getattr(r, "usage_metadata", None)
+    if u is None:
+        return {}
+    return {"prompt_eval_count": u.prompt_token_count,
+            "eval_count": (u.candidates_token_count or 0) + (u.thoughts_token_count or 0),
+            "tokens_raciocinio": u.thoughts_token_count or 0}
+
+
+def chamar_gemini(cliente, prompt: str, esquema: dict, modelo: str = MODELO_GEMINI):
+    """Rotulagem com saída JSON no esquema. Retorna (texto, versao_modelo, segundos, info de tokens)."""
+    from google.genai import types
+    config = types.GenerateContentConfig(
+        temperature=0, response_mime_type="application/json",
+        response_json_schema=esquema)
+    r, seg = chamar_com_retentativa(
+        lambda: cliente.models.generate_content(model=modelo, contents=prompt, config=config))
+    return r.text, r.model_version, seg, uso_gemini(r)
 
 
 # ---------------------------------------------------------------- Ollama
@@ -162,8 +224,7 @@ def rotular(df, rotulador, saida: Path, tamanho_lote=25, modelo=None,
         prompt = prompt_rotulagem(lote)
         try:
             if rotulador == "gemini":
-                texto, versao, seg = chamar_gemini(cliente, prompt, ESQUEMA_LOTE, modelo or MODELO_GEMINI)
-                info = {}
+                texto, versao, seg, info = chamar_gemini(cliente, prompt, ESQUEMA_LOTE, modelo or MODELO_GEMINI)
             else:
                 texto, versao, seg, info = chamar_ollama(prompt, modelo, ESQUEMA_LOTE, url)
         except CotaDiariaEsgotada as e:

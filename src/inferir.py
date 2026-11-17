@@ -25,8 +25,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import DATA_PROCESSED, SEED  # noqa: E402
 from esquema import ESQUEMA_SAIDA  # noqa: E402
 from prompts import VERSAO_BASELINE, prompt_baseline  # noqa: E402
-from rotular import (MODELO_GEMINI, _cliente_gemini, chamar_gemini,  # noqa: E402
-                     chamar_ollama)
+from rotular import (MODELO_GEMINI, CotaDiariaEsgotada, _cliente_gemini,  # noqa: E402
+                     chamar_com_retentativa, chamar_ollama, uso_gemini)
 
 
 def selecionar(split: str, n: int | None, ids_arquivo: str | None) -> pd.DataFrame:
@@ -42,35 +42,19 @@ def selecionar(split: str, n: int | None, ids_arquivo: str | None) -> pd.DataFra
 
 
 def chamar_gemini_livre(cliente, prompt: str, modelo: str = MODELO_GEMINI):
-    """Gemini sem esquema forçado (mesmas condições dos outros baselines)."""
+    """Gemini sem esquema forçado (mesmas condições dos outros baselines).
+    Cota diária esgotada -> CotaDiariaEsgotada (ver rotular.chamar_com_retentativa)."""
     from google.genai import types
-    import re
-    from google.genai import errors
     config = types.GenerateContentConfig(temperature=0)
-    espera = 10
-    for tentativa in range(8):
-        inicio = time.time()
-        try:
-            r = cliente.models.generate_content(model=modelo, contents=prompt, config=config)
-            u = r.usage_metadata
-            info = {"prompt_eval_count": u.prompt_token_count,
-                    # tokens cobrados como saída = resposta + raciocínio interno
-                    "eval_count": (u.candidates_token_count or 0) + (u.thoughts_token_count or 0)}
-            return r.text, r.model_version, time.time() - inicio, info
-        except errors.APIError as e:
-            if e.code == 429 or e.code >= 500:
-                m = re.search(r"retry in ([\d.]+)s", str(e))
-                atraso = float(m.group(1)) + 2 if m else espera
-                print(f"  erro {e.code}, aguardando {atraso:.0f}s", flush=True)
-                time.sleep(atraso)
-                espera = min(espera * 2, 300)
-            else:
-                raise
-    raise RuntimeError("Falhou depois de 8 tentativas")
+    r, seg = chamar_com_retentativa(
+        lambda: cliente.models.generate_content(model=modelo, contents=prompt, config=config))
+    return r.text, r.model_version, seg, uso_gemini(r)
 
 
 def inferir(df, backend, modelo, saida: Path, url="http://localhost:11434",
-            restrito=False, pausa=0.0):
+            restrito=False, pausa=0.0) -> int:
+    """Roda as pendentes e grava uma linha por avaliação. Retorna quantas fez nesta execução.
+    Se a cota diária do Gemini acabar, para limpo (o que já foi gravado fica)."""
     saida.parent.mkdir(parents=True, exist_ok=True)
     feitos = set()
     if saida.exists():
@@ -78,6 +62,7 @@ def inferir(df, backend, modelo, saida: Path, url="http://localhost:11434",
     pendentes = df[~df["review_id"].isin(feitos)]
     print(f"{len(feitos)} feitas, {len(pendentes)} pendentes", flush=True)
     cliente = _cliente_gemini() if backend == "gemini" else None
+    feitas = 0
     for n, (rid, texto) in enumerate(zip(pendentes["review_id"], pendentes["texto"]), 1):
         prompt = prompt_baseline(texto)
         info = {}
@@ -85,15 +70,23 @@ def inferir(df, backend, modelo, saida: Path, url="http://localhost:11434",
             resposta, versao, seg, info = chamar_ollama(
                 prompt, modelo, ESQUEMA_SAIDA if restrito else None, url, num_predict=512, num_ctx=2048)
         else:
-            resposta, versao, seg, info = chamar_gemini_livre(cliente, prompt, modelo or MODELO_GEMINI)
+            try:
+                resposta, versao, seg, info = chamar_gemini_livre(cliente, prompt, modelo or MODELO_GEMINI)
+            except CotaDiariaEsgotada as e:
+                print(f"Cota diária esgotada: {e}\nParando: {feitas} feitas nesta execução, "
+                      f"{len(feitos) + feitas} no total em {saida}; "
+                      f"{len(pendentes) - feitas} pendentes (rode de novo para continuar).", flush=True)
+                return feitas
         reg = {"review_id": rid, "resposta": resposta, "modelo": versao,
                "prompt": VERSAO_BASELINE, "restrito": restrito, "segundos": round(seg, 3), **info}
         with open(saida, "a", encoding="utf-8") as f:
             f.write(json.dumps(reg, ensure_ascii=False) + "\n")
+        feitas += 1
         if n % 10 == 0 or n == len(pendentes):
             print(f"{n}/{len(pendentes)} ({seg:.1f}s última)", flush=True)
         if pausa:
             time.sleep(pausa)
+    return feitas
 
 
 def main():

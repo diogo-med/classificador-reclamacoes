@@ -24,6 +24,7 @@ PUB = RAIZ / "publicacao"
 NOME_MODELO = "classificador-reclamacoes-qwen3.5-2b"
 NOME_DATASET = "classificador-reclamacoes-olist"
 NOME_SPACE = "classificador-reclamacoes-demo"
+GITHUB = "https://github.com/diogo-med/classificador-reclamacoes"
 MODELO_PRINCIPAL = "Qwen3.5-2B + LoRA (este projeto)"
 GGUFS = {"q8_0": RAIZ / "modelos" / "qwen2b_lora-Q8_0.gguf",
          "q4_k_m": RAIZ / "modelos" / "qwen2b_lora-Q4_K_M.gguf"}
@@ -111,6 +112,10 @@ Categorias: {", ".join(f"`{c}`" for c in CATEGORIAS)}.
 **É destilação:** os rótulos de treino foram gerados pelo Gemini 3.6 Flash; o modelo aprende a
 imitá-lo. A pergunta do projeto é quanto da qualidade do Gemini um 2B retém, e a que custo.
 
+Código, avaliação completa e decisões: [{GITHUB.removeprefix("https://")}]({GITHUB}).
+Dataset: [{usuario}/{NOME_DATASET}](https://huggingface.co/datasets/{usuario}/{NOME_DATASET}).
+Demo: [{usuario}/{NOME_SPACE}](https://huggingface.co/spaces/{usuario}/{NOME_SPACE}).
+
 {aviso}## Resultados no teste
 
 {ler("tabela_qualidade.md")}
@@ -174,6 +179,9 @@ problema e resumo); as demais têm as colunas de rótulo vazias (a cota gratuita
 rotulagem do treino):
 {linhas_rot}
 
+Código e avaliação: [{GITHUB.removeprefix("https://")}]({GITHUB}). Modelo treinado com estes
+rótulos: [{usuario}/{NOME_MODELO}](https://huggingface.co/{usuario}/{NOME_MODELO}).
+
 ## Origem e amostragem
 - Deduplicação (uma avaliação por pedido, a mais recente), só avaliações com texto.
 - Amostra estratificada por nota com peso 3 para notas 1-3 (onde estão as reclamações).
@@ -231,6 +239,7 @@ colorFrom: blue
 colorTo: gray
 sdk: gradio
 sdk_version: 6.31.0
+python_version: "3.11"
 app_file: app.py
 license: cc-by-nc-sa-4.0
 models:
@@ -239,6 +248,7 @@ datasets:
 - {usuario}/{NOME_DATASET}
 ---
 Demo do modelo [{usuario}/{NOME_MODELO}](https://huggingface.co/{usuario}/{NOME_MODELO}) em CPU (GGUF Q4_K_M).
+Rótulos de treino gerados pelo Gemini (revisão humana pendente). Código: [{GITHUB.removeprefix("https://")}]({GITHUB}).
 """, encoding="utf-8")
     print("gerado em", PUB)
 

@@ -45,6 +45,13 @@ mudar (inclusive inverter) com os rótulos humanos.
 {"sentimento": "negativo", "categorias": ["incompleto", "atendimento"], "resumo": "Faltou um item e a loja não responde."}
 ```
 
+## Modelo, dataset e demo
+No Hugging Face, com os rótulos **provisórios** do Gemini (serão atualizados depois da revisão
+humana):
+- Modelo (adaptador LoRA e GGUFs Q8_0 e Q4_K_M): [Diogv20/classificador-reclamacoes-qwen3.5-2b](https://huggingface.co/Diogv20/classificador-reclamacoes-qwen3.5-2b)
+- Dataset (4.000 avaliações, 2.050 rotuladas): [Diogv20/classificador-reclamacoes-olist](https://huggingface.co/datasets/Diogv20/classificador-reclamacoes-olist)
+- Demo (Gradio, CPU): [Diogv20/classificador-reclamacoes-demo](https://huggingface.co/spaces/Diogv20/classificador-reclamacoes-demo)
+
 ## Resultados
 
 Todos os números abaixo são gerados por `python src/avaliar.py` a partir de arquivos em

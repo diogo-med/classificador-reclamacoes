@@ -22,6 +22,9 @@ rotulagem do treino):
   - validation: 350 de 350
   - test: 500 de 500
 
+Código e avaliação: [github.com/diogo-med/classificador-reclamacoes](https://github.com/diogo-med/classificador-reclamacoes). Modelo treinado com estes
+rótulos: [Diogv20/classificador-reclamacoes-qwen3.5-2b](https://huggingface.co/Diogv20/classificador-reclamacoes-qwen3.5-2b).
+
 ## Origem e amostragem
 - Deduplicação (uma avaliação por pedido, a mais recente), só avaliações com texto.
 - Amostra estratificada por nota com peso 3 para notas 1-3 (onde estão as reclamações).
